@@ -1,0 +1,85 @@
+from datetime import date as date_type, datetime
+
+from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.database import Base
+
+
+class MaintenanceRecord(Base):
+    __tablename__ = "maintenance_records"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    description: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    item: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    category: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    date: Mapped[date_type] = mapped_column(
+        Date,
+        nullable=False,
+    )
+
+    cost: Mapped[float] = mapped_column(
+        Float,
+        nullable=False,
+    )
+
+    service_provider: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True,
+    )
+
+    next_due_date: Mapped[date_type | None] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    image_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    user = relationship(
+        "User",
+        back_populates="maintenance_records",
+    )
