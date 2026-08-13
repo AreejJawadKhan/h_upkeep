@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.dependencies.auth import get_current_user
+from app.models.user import User
 from app.schemas.maintenance import (
     MaintenanceCreate,
     MaintenanceResponse,
@@ -22,10 +24,6 @@ router = APIRouter(
 )
 
 
-# Temporary user until authentication is implemented
-CURRENT_USER_ID = 1
-
-
 @router.post(
     "",
     response_model=MaintenanceResponse,
@@ -34,11 +32,12 @@ CURRENT_USER_ID = 1
 def create_maintenance_record(
     data: MaintenanceCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     return create_maintenance(
         db=db,
         data=data,
-        user_id=CURRENT_USER_ID,
+        user_id=current_user.id,
     )
 
 
@@ -48,10 +47,11 @@ def create_maintenance_record(
 )
 def list_maintenance_records(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     return get_maintenance_records(
         db=db,
-        user_id=CURRENT_USER_ID,
+        user_id=current_user.id,
     )
 
 
@@ -62,11 +62,12 @@ def list_maintenance_records(
 def get_maintenance_record_by_id(
     record_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     record = get_maintenance_record(
         db=db,
         record_id=record_id,
-        user_id=CURRENT_USER_ID,
+        user_id=current_user.id,
     )
 
     if record is None:
@@ -86,11 +87,12 @@ def update_maintenance_record(
     record_id: int,
     data: MaintenanceUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     record = get_maintenance_record(
         db=db,
         record_id=record_id,
-        user_id=CURRENT_USER_ID,
+        user_id=current_user.id,
     )
 
     if record is None:
@@ -113,11 +115,12 @@ def update_maintenance_record(
 def delete_maintenance_record(
     record_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     record = get_maintenance_record(
         db=db,
         record_id=record_id,
-        user_id=CURRENT_USER_ID,
+        user_id=current_user.id,
     )
 
     if record is None:

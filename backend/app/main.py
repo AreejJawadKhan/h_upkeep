@@ -1,30 +1,98 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.sessions import SessionMiddleware
 
+from app.core.config import settings
+from app.core.limiter import limiter
 from app.db.database import Base, engine
-from app.models import MaintenanceRecord, User
-from app.api.maintenance import router as maintenance_router
+
+# Import all ORM models before create_all so SQLAlchemy's metadata knows
+# about every table.  The noqa comments suppress "imported but unused" lints;
+# these imports are intentional side-effects required for table registration.
+from app.models import (  # noqa: F401
+    AuthIdentity,
+    EmailVerificationToken,
+    MaintenanceRecord,
+    PasswordResetToken,
+    RefreshToken,
+    User,
+)
+
 from app.api.auth import router as auth_router
+from app.api.maintenance import router as maintenance_router
+
+# ---------------------------------------------------------------------------
+# Schema / table creation
+# ---------------------------------------------------------------------------
 
 Base.metadata.create_all(bind=engine)
 
+# ---------------------------------------------------------------------------
+# Application
+# ---------------------------------------------------------------------------
+
 app = FastAPI(
     title="HomeRepair Log API",
-    description="Backend API for HomeRepair Log",
-    version="0.1.0",
+    description=(
+        "Backend API for HomeRepair Log — a production-minded home maintenance "
+        "management system. See /docs for interactive Swagger UI."
+    ),
+    version="0.2.0",
 )
+
+# ---------------------------------------------------------------------------
+# Rate limiting
+# ---------------------------------------------------------------------------
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ---------------------------------------------------------------------------
+# Session middleware (required for Google OAuth CSRF state)
+# Must be added BEFORE CORSMiddleware so the session is available in routes.
+# ---------------------------------------------------------------------------
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SESSION_SECRET_KEY,
+    same_site="lax",
+    https_only=settings.COOKIE_SECURE,
+)
+
+# ---------------------------------------------------------------------------
+# CORS
+# allow_credentials=True is required for the browser to include the
+# HttpOnly refresh-token cookie in cross-origin requests (e.g. from the
+# React dev server on port 5173 to the API on port 8000).
+# ---------------------------------------------------------------------------
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ---------------------------------------------------------------------------
+# Routers
+# ---------------------------------------------------------------------------
 
 app.include_router(auth_router)
 app.include_router(maintenance_router)
 
-@app.get("/")
+
+# ---------------------------------------------------------------------------
+# Health / root
+# ---------------------------------------------------------------------------
+
+@app.get("/", tags=["Health"])
 def root():
-    return {
-        "message": "HomeRepair Log API is running"
-    }
+    return {"message": "HomeRepair Log API is running", "version": "0.2.0"}
 
 
-@app.get("/health")
+@app.get("/health", tags=["Health"])
 def health_check():
-    return {
-        "status": "ok"
-    }
+    return {"status": "ok"}

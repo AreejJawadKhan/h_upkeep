@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import List, Optional
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -27,8 +28,18 @@ class User(Base):
         index=True,
     )
 
-    password_hash: Mapped[str] = mapped_column(
+    # Nullable: Google-authenticated users may not have a local password.
+    password_hash: Mapped[Optional[str]] = mapped_column(
         String(255),
+        nullable=True,
+    )
+
+    # False until the user clicks the verification link sent to their email.
+    # Google-authenticated users are created with email_verified=True because
+    # Google has already verified ownership of the email address.
+    email_verified: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
         nullable=False,
     )
 
@@ -38,8 +49,41 @@ class User(Base):
         nullable=False,
     )
 
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # --- Relationships ---
+
     maintenance_records = relationship(
         "MaintenanceRecord",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    auth_identities = relationship(
+        "AuthIdentity",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    email_verification_tokens = relationship(
+        "EmailVerificationToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    refresh_tokens = relationship(
+        "RefreshToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    password_reset_tokens = relationship(
+        "PasswordResetToken",
         back_populates="user",
         cascade="all, delete-orphan",
     )
