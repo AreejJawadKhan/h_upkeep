@@ -54,6 +54,24 @@ class Home(Base):
         nullable=False,
     )
 
+    areas = relationship(
+        "Area",
+        back_populates="home",
+        cascade="all, delete-orphan",
+    )
+
+    assets = relationship(
+        "Asset",
+        back_populates="home",
+        cascade="all, delete-orphan",
+    )
+
+    maintenance_records = relationship(
+        "MaintenanceRecord",
+        back_populates="home",
+        cascade="all, delete-orphan",
+    )
+
     user = relationship(
         "User",
         back_populates="homes",

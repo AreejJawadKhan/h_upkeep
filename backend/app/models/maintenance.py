@@ -16,8 +16,20 @@ class MaintenanceRecord(Base):
     )
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
+    )
+
+    home_id: Mapped[int] = mapped_column(
+        ForeignKey("homes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    asset_id: Mapped[int | None] = mapped_column(
+        ForeignKey("assets.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
     )
 
@@ -81,5 +93,15 @@ class MaintenanceRecord(Base):
 
     user = relationship(
         "User",
+        back_populates="maintenance_records",
+    )
+
+    home = relationship(
+        "Home",
+        back_populates="maintenance_records",
+    )
+
+    asset = relationship(
+        "Asset",
         back_populates="maintenance_records",
     )

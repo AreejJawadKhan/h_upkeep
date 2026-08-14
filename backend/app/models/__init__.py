@@ -5,6 +5,8 @@ from app.models.refresh_token import RefreshToken
 from app.models.password_reset_token import PasswordResetToken
 from app.models.maintenance import MaintenanceRecord
 from app.models.home import Home
+from app.models.area import Area
+from app.models.asset import Asset
 
 __all__ = [
     "User",
@@ -14,4 +16,6 @@ __all__ = [
     "PasswordResetToken",
     "MaintenanceRecord",
     "Home",
+    "Area",
+    "Asset",
 ]
