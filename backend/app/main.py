@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.sessions import SessionMiddleware
+from sqlalchemy.engine.url import make_url
 
 from app.core.config import settings
 from app.core.limiter import limiter
@@ -33,7 +34,8 @@ from app.api.maintenance import router as maintenance_router
 # Schema / table creation
 # ---------------------------------------------------------------------------
 
-Base.metadata.create_all(bind=engine)
+if settings.AUTO_CREATE_TABLES and make_url(settings.DATABASE_URL).get_backend_name() == "sqlite":
+    Base.metadata.create_all(bind=engine)
 
 # ---------------------------------------------------------------------------
 # Application
@@ -45,7 +47,7 @@ app = FastAPI(
         "Backend API for HomeRepair Log — a production-minded home maintenance "
         "management system. See /docs for interactive Swagger UI."
     ),
-    version="0.5.0",
+    version="0.6.0",
 )
 
 # ---------------------------------------------------------------------------
@@ -99,7 +101,7 @@ app.include_router(maintenance_router)
 
 @app.get("/", tags=["Health"])
 def root():
-    return {"message": "HomeRepair Log API is running", "version": "0.5.0"}
+    return {"message": "HomeRepair Log API is running", "version": "0.6.0"}
 
 
 @app.get("/health", tags=["Health"])

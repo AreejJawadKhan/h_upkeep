@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
-import { apiRequest } from '../lib/api';
+import { apiRequestWithRefresh } from '../lib/api';
 import { formatCurrency, formatDate } from '../lib/format';
 import type { Asset, Home, MaintenanceCategory, MaintenanceRecord } from '../lib/types';
 
@@ -44,7 +44,7 @@ const emptyForm: MaintenanceForm = {
 };
 
 export function MaintenancePage() {
-  const { accessToken } = useAuth();
+  const { accessToken, refreshSession } = useAuth();
   const [params, setParams] = useSearchParams();
   const [homes, setHomes] = useState<Home[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -65,7 +65,12 @@ export function MaintenancePage() {
   );
 
   async function loadHomes() {
-    const data = await apiRequest<Home[]>('/homes', {}, accessToken);
+    const data = await apiRequestWithRefresh<Home[]>(
+      '/homes',
+      {},
+      () => accessToken,
+      refreshSession,
+    );
     setHomes(data);
     if (!selectedHomeId && data.length > 0) {
       setParams({ home: String(data[0].id) }, { replace: true });
@@ -79,13 +84,19 @@ export function MaintenancePage() {
     setError('');
     try {
       const [assetsData, recordsData] = await Promise.all([
-        apiRequest<Asset[]>(`/homes/${homeId}/assets`, {}, accessToken),
-        apiRequest<MaintenanceRecord[]>(
+        apiRequestWithRefresh<Asset[]>(
+          `/homes/${homeId}/assets`,
+          {},
+          () => accessToken,
+          refreshSession,
+        ),
+        apiRequestWithRefresh<MaintenanceRecord[]>(
           filter === 'all'
             ? `/homes/${homeId}/maintenance`
             : `/homes/${homeId}/maintenance?asset_id=${filter}`,
           {},
-          accessToken,
+          () => accessToken,
+          refreshSession,
         ),
       ]);
       setAssets(assetsData);
@@ -163,16 +174,18 @@ export function MaintenancePage() {
 
     try {
       if (editingId) {
-        await apiRequest<MaintenanceRecord>(
+        await apiRequestWithRefresh<MaintenanceRecord>(
           `/homes/${selectedHome.id}/maintenance/${editingId}`,
           { method: 'PATCH', body },
-          accessToken,
+          () => accessToken,
+          refreshSession,
         );
       } else {
-        await apiRequest<MaintenanceRecord>(
+        await apiRequestWithRefresh<MaintenanceRecord>(
           `/homes/${selectedHome.id}/maintenance`,
           { method: 'POST', body },
-          accessToken,
+          () => accessToken,
+          refreshSession,
         );
       }
       await loadDetails(selectedHome.id, assetFilter);
@@ -188,7 +201,12 @@ export function MaintenancePage() {
   async function remove(record: MaintenanceRecord) {
     if (!selectedHome) return;
     if (!window.confirm(`Delete ${record.title}?`)) return;
-    await apiRequest<void>(`/homes/${selectedHome.id}/maintenance/${record.id}`, { method: 'DELETE' }, accessToken);
+    await apiRequestWithRefresh<void>(
+      `/homes/${selectedHome.id}/maintenance/${record.id}`,
+      { method: 'DELETE' },
+      () => accessToken,
+      refreshSession,
+    );
     await loadDetails(selectedHome.id, assetFilter);
   }
 

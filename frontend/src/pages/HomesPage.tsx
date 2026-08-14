@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { EmptyState, Field, Panel, Button } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE } from '../lib/api';
+import { apiRequestWithRefresh } from '../lib/api';
 import type { Area, Asset, Home } from '../lib/types';
 import { formatDate } from '../lib/format';
 
@@ -47,7 +47,7 @@ const emptyAsset: AssetForm = {
 };
 
 export function HomesPage() {
-  const { accessToken, createHome, updateHome, deleteHome, createArea, updateArea, deleteArea, createAsset, updateAsset, deleteAsset } = useAuth();
+  const { accessToken, refreshSession, createHome, updateHome, deleteHome, createArea, updateArea, deleteArea, createAsset, updateAsset, deleteAsset } = useAuth();
   const [params, setParams] = useSearchParams();
   const [homes, setHomes] = useState<Home[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
@@ -73,17 +73,15 @@ export function HomesPage() {
   const [saving, setSaving] = useState(false);
 
   async function loadHomes() {
-      setLoading(true);
-      setError('');
-      try {
-      const response = await fetch(`${API_BASE}/homes`, {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        throw new Error('Could not load homes.');
-      }
-      const data = (await response.json()) as Home[];
+    setLoading(true);
+    setError('');
+    try {
+      const data = await apiRequestWithRefresh<Home[]>(
+        '/homes',
+        {},
+        () => accessToken,
+        refreshSession,
+      );
       setHomes(data);
       if (!selectedHomeId && data.length > 0) {
         setParams({ home: String(data[0].id) }, { replace: true });
@@ -98,29 +96,26 @@ export function HomesPage() {
   }
 
   async function loadDetails(homeId: number, filterAreaId: string) {
-      setDetailLoading(true);
-      try {
-        const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-        const [areasResponse, assetsResponse] = await Promise.all([
-        fetch(`${API_BASE}/homes/${homeId}/areas`, {
-          headers,
-          credentials: 'include',
-        }),
-        fetch(
+    setDetailLoading(true);
+    try {
+      const [areasData, assetsData] = await Promise.all([
+        apiRequestWithRefresh<Area[]>(
+          `/homes/${homeId}/areas`,
+          {},
+          () => accessToken,
+          refreshSession,
+        ),
+        apiRequestWithRefresh<Asset[]>(
           filterAreaId === 'all'
-            ? `${API_BASE}/homes/${homeId}/assets`
-            : `${API_BASE}/homes/${homeId}/assets?area_id=${filterAreaId}`,
-          {
-            headers,
-            credentials: 'include',
-          },
+            ? `/homes/${homeId}/assets`
+            : `/homes/${homeId}/assets?area_id=${filterAreaId}`,
+          {},
+          () => accessToken,
+          refreshSession,
         ),
       ]);
-      if (!areasResponse.ok || !assetsResponse.ok) {
-        throw new Error('Could not load the selected home.');
-      }
-      setAreas((await areasResponse.json()) as Area[]);
-      setAssets((await assetsResponse.json()) as Asset[]);
+      setAreas(areasData);
+      setAssets(assetsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load the selected home.');
     } finally {

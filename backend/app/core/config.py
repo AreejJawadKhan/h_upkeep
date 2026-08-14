@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # --- Database ---
     DATABASE_URL: str = "sqlite:///./home_repair_log.db"
+    AUTO_CREATE_TABLES: bool = True
 
     # --- JWT access tokens ---
     JWT_SECRET: str = "development-secret-change-this"

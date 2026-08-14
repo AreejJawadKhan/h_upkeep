@@ -67,3 +67,21 @@ export async function apiRequest<T>(
   return payload as T;
 }
 
+export async function apiRequestWithRefresh<T>(
+  path: string,
+  options: RequestOptions = {},
+  getToken: () => string | null,
+  refreshToken: () => Promise<string | null>,
+): Promise<T> {
+  try {
+    return await apiRequest<T>(path, options, getToken());
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      const refreshedToken = await refreshToken();
+      if (refreshedToken) {
+        return apiRequest<T>(path, options, refreshedToken);
+      }
+    }
+    throw error;
+  }
+}

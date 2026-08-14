@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { API_BASE, apiRequest } from '../lib/api';
+import { API_BASE, ApiError, apiRequest } from '../lib/api';
 import type {
   Area,
   Asset,
@@ -16,8 +16,6 @@ import type {
   TokenResponse,
   User,
 } from '../lib/types';
-
-const ACCESS_TOKEN_KEY = 'homerepair_access_token';
 
 type RegisterInput = {
   name: string;
@@ -62,7 +60,7 @@ type AuthContextValue = {
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<User>;
   logout: () => Promise<void>;
-  refreshSession: () => Promise<boolean>;
+  refreshSession: () => Promise<string | null>;
   completeGoogleLogin: (accessToken: string) => Promise<void>;
   verifyEmail: (token: string) => Promise<MessageResponse>;
   resendVerification: (email: string) => Promise<MessageResponse>;
@@ -87,19 +85,9 @@ function normalizeOptionalString(value: string) {
   return value.trim();
 }
 
-function storeToken(token: string | null) {
-  if (token) {
-    sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
-  } else {
-    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessTokenState] = useState<string | null>(() =>
-    sessionStorage.getItem(ACCESS_TOKEN_KEY),
-  );
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   const googleLoginUrl = `${API_BASE}/auth/google/login`;
@@ -108,52 +96,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const current = await apiRequest<User>('/auth/me', {}, token);
     setUser(current);
     setAccessTokenState(token);
-    storeToken(token);
   }
 
-  async function refreshSession() {
+  async function refreshSession(): Promise<string | null> {
     try {
       const refreshed = await apiRequest<RefreshResponse>('/auth/refresh', { method: 'POST' });
       await hydrateWithToken(refreshed.access_token);
-      return true;
+      return refreshed.access_token;
     } catch {
       setUser(null);
       setAccessTokenState(null);
-      storeToken(null);
-      return false;
+      return null;
     }
   }
 
   useEffect(() => {
-    let alive = true;
-
     (async () => {
-      try {
-        const cached = sessionStorage.getItem(ACCESS_TOKEN_KEY);
-        if (cached) {
-          try {
-            await hydrateWithToken(cached);
-            if (alive) {
-              setReady(true);
-            }
-            return;
-          } catch {
-            storeToken(null);
-            setAccessTokenState(null);
-          }
-        }
-        await refreshSession();
-      } finally {
-        if (alive) {
-          setReady(true);
+      await refreshSession();
+      setReady(true);
+    })();
+  }, []);
+
+  async function requestWithAuth<T>(
+    path: string,
+    options: Parameters<typeof apiRequest<T>>[1] = {},
+  ) {
+    try {
+      return await apiRequest<T>(path, options, accessToken);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        const refreshedToken = await refreshSession();
+        if (refreshedToken) {
+          return apiRequest<T>(path, options, refreshedToken);
         }
       }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
+      throw error;
+    }
+  }
 
   async function login(input: LoginInput) {
     const response = await apiRequest<TokenResponse>('/auth/login', {
@@ -169,11 +148,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     try {
-      await apiRequest<MessageResponse>('/auth/logout', { method: 'POST' }, accessToken);
+      await apiRequest<MessageResponse>('/auth/logout', { method: 'POST' });
     } finally {
       setUser(null);
       setAccessTokenState(null);
-      storeToken(null);
     }
   }
 
@@ -210,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function createHome(input: HomeInput) {
-    return apiRequest<Home>('/homes', {
+    return requestWithAuth<Home>('/homes', {
       method: 'POST',
       body: {
         ...input,
@@ -218,46 +196,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         address: normalizeOptionalString(input.address),
         property_type: normalizeOptionalString(input.property_type),
       },
-    }, accessToken);
+    });
   }
 
   async function updateHome(homeId: number, input: Partial<HomeInput>) {
-    return apiRequest<Home>(`/homes/${homeId}`, {
+    return requestWithAuth<Home>(`/homes/${homeId}`, {
       method: 'PATCH',
       body: input,
-    }, accessToken);
+    });
   }
 
   async function deleteHome(homeId: number) {
-    await apiRequest<void>(`/homes/${homeId}`, { method: 'DELETE' }, accessToken);
+    await requestWithAuth<void>(`/homes/${homeId}`, { method: 'DELETE' });
   }
 
   async function createArea(homeId: number, input: AreaInput) {
-    return apiRequest<Area>(`/homes/${homeId}/areas`, {
+    return requestWithAuth<Area>(`/homes/${homeId}/areas`, {
       method: 'POST',
       body: {
         name: normalizeOptionalString(input.name),
         notes: input.notes.trim() || null,
       },
-    }, accessToken);
+    });
   }
 
   async function updateArea(homeId: number, areaId: number, input: Partial<AreaInput>) {
     const body: Record<string, string | null> = {};
     if (input.name !== undefined) body.name = normalizeOptionalString(input.name);
     if (input.notes !== undefined) body.notes = input.notes.trim() || null;
-    return apiRequest<Area>(`/homes/${homeId}/areas/${areaId}`, {
+    return requestWithAuth<Area>(`/homes/${homeId}/areas/${areaId}`, {
       method: 'PATCH',
       body,
-    }, accessToken);
+    });
   }
 
   async function deleteArea(homeId: number, areaId: number) {
-    await apiRequest<void>(`/homes/${homeId}/areas/${areaId}`, { method: 'DELETE' }, accessToken);
+    await requestWithAuth<void>(`/homes/${homeId}/areas/${areaId}`, { method: 'DELETE' });
   }
 
   async function createAsset(homeId: number, input: AssetInput) {
-    return apiRequest<Asset>(`/homes/${homeId}/assets`, {
+    return requestWithAuth<Asset>(`/homes/${homeId}/assets`, {
       method: 'POST',
       body: {
         name: normalizeOptionalString(input.name),
@@ -272,7 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         notes: input.notes.trim() || null,
         area_id: input.area_id.trim() === '' ? null : Number(input.area_id),
       },
-    }, accessToken);
+    });
   }
 
   async function updateAsset(homeId: number, assetId: number, input: Partial<AssetInput>) {
@@ -289,14 +267,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (input.notes !== undefined) body.notes = input.notes.trim() || null;
     if (input.area_id !== undefined) body.area_id = input.area_id.trim() === '' ? null : Number(input.area_id);
-    return apiRequest<Asset>(`/homes/${homeId}/assets/${assetId}`, {
+    return requestWithAuth<Asset>(`/homes/${homeId}/assets/${assetId}`, {
       method: 'PATCH',
       body,
-    }, accessToken);
+    });
   }
 
   async function deleteAsset(homeId: number, assetId: number) {
-    await apiRequest<void>(`/homes/${homeId}/assets/${assetId}`, { method: 'DELETE' }, accessToken);
+    await requestWithAuth<void>(`/homes/${homeId}/assets/${assetId}`, { method: 'DELETE' });
   }
 
   const value = useMemo<AuthContextValue>(
@@ -325,7 +303,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       googleLoginUrl,
       setAccessToken: (token) => {
         setAccessTokenState(token);
-        storeToken(token);
       },
     }),
     [accessToken, ready, user],
