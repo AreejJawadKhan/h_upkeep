@@ -4,6 +4,7 @@ from app.models.email_verification import EmailVerificationToken
 from app.models.refresh_token import RefreshToken
 from app.models.password_reset_token import PasswordResetToken
 from app.models.maintenance import MaintenanceRecord
+from app.models.home import Home
 
 __all__ = [
     "User",
@@ -12,4 +13,5 @@ __all__ = [
     "RefreshToken",
     "PasswordResetToken",
     "MaintenanceRecord",
+    "Home",
 ]
