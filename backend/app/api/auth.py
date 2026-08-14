@@ -29,7 +29,6 @@ Rate-limit summary
 """
 
 import secrets
-from datetime import datetime
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -41,6 +40,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.limiter import limiter
 from app.core.security import create_access_token, hash_password
+from app.core.time import utc_now
 from app.db.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.refresh_token import RefreshToken
@@ -309,7 +309,7 @@ def password_reset_confirm(
 
     # Update the password.
     user.password_hash = hash_password(data.new_password)
-    user.updated_at = datetime.utcnow()
+    user.updated_at = utc_now()
     db.commit()
 
     # Security: revoke all active refresh tokens so existing sessions are

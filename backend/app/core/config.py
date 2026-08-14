@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     AUTO_CREATE_TABLES: bool = True
 
     # --- JWT access tokens ---
-    JWT_SECRET: str = "development-secret-change-this"
+    JWT_SECRET: str = "set-via-env"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = ["http://localhost:5173"]
 
     # --- Session (OAuth state signing) ---
-    SESSION_SECRET_KEY: str = "dev-session-secret-change-in-production"
+    SESSION_SECRET_KEY: str = "set-via-env"
 
     # --- Email ---
     # True (default) → print emails to console instead of sending via SMTP.
