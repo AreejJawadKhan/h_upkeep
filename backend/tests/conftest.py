@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.api import auth as auth_api
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.db.database import Base
 
 
@@ -42,6 +43,7 @@ def app_client(tmp_path, monkeypatch):
     monkeypatch.setattr("app.db.database.SessionLocal", TestingSessionLocal, raising=False)
     monkeypatch.setattr("app.main.engine", engine, raising=False)
 
+    limiter.reset()
     Base.metadata.create_all(bind=engine)
 
     state = {

@@ -100,9 +100,3 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
-
-    maintenance_schedules = relationship(
-        "MaintenanceSchedule",
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )

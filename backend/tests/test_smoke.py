@@ -249,3 +249,57 @@ def test_maintenance_schedule_complete_creates_history(app_client):
     list_records = client.get(f"/homes/{home_id}/maintenance", headers=headers)
     assert list_records.status_code == 200
     assert len(list_records.json()) == 1
+
+
+def test_maintenance_schedule_update_and_delete(app_client):
+    client, SessionLocal, state, token = _bootstrap_logged_in_user(app_client, "schedule-crud@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    home_response = client.post(
+        "/homes",
+        json={
+            "name": "Crud Home",
+            "address": "88 Spruce Lane",
+            "property_type": "House",
+            "year_built": 2018,
+        },
+        headers=headers,
+    )
+    assert home_response.status_code == 201, home_response.text
+    home_id = home_response.json()["id"]
+
+    create_response = client.post(
+        f"/homes/{home_id}/schedules",
+        json={
+            "title": "Replace smoke alarm batteries",
+            "description": "Annual battery check",
+            "frequency": "yearly",
+            "next_due_date": "2026-10-01",
+            "reminder_enabled": True,
+        },
+        headers=headers,
+    )
+    assert create_response.status_code == 201, create_response.text
+    schedule_id = create_response.json()["id"]
+
+    update_response = client.patch(
+        f"/homes/{home_id}/schedules/{schedule_id}",
+        json={
+            "title": "Replace smoke alarm batteries and test alarms",
+            "reminder_enabled": False,
+        },
+        headers=headers,
+    )
+    assert update_response.status_code == 200, update_response.text
+    assert update_response.json()["title"] == "Replace smoke alarm batteries and test alarms"
+    assert update_response.json()["reminder_enabled"] is False
+
+    get_response = client.get(f"/homes/{home_id}/schedules/{schedule_id}", headers=headers)
+    assert get_response.status_code == 200, get_response.text
+
+    delete_response = client.delete(f"/homes/{home_id}/schedules/{schedule_id}", headers=headers)
+    assert delete_response.status_code == 204, delete_response.text
+
+    list_schedules = client.get(f"/homes/{home_id}/schedules", headers=headers)
+    assert list_schedules.status_code == 200
+    assert list_schedules.json() == []

@@ -86,6 +86,35 @@ export type MaintenanceRecord = {
   updated_at: string;
 };
 
+export type ScheduleFrequency =
+  | 'one_time'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'yearly';
+
+export type MaintenanceSchedule = {
+  id: number;
+  user_id: number;
+  home_id: number;
+  asset_id: number | null;
+  title: string;
+  description: string | null;
+  frequency: ScheduleFrequency;
+  next_due_date: string | null;
+  last_completed: string | null;
+  reminder_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MaintenanceScheduleCompleteResponse = {
+  message: string;
+  schedule: MaintenanceSchedule;
+  maintenance_record: MaintenanceRecord | null;
+};
+
 export type ApiErrorShape = {
   detail?: string;
   message?: string;
