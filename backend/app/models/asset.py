@@ -100,3 +100,8 @@ class Asset(Base):
         "MaintenanceRecord",
         back_populates="asset",
     )
+
+    maintenance_schedules = relationship(
+        "MaintenanceSchedule",
+        back_populates="asset",
+    )

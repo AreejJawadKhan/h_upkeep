@@ -65,6 +65,12 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
+    maintenance_schedules = relationship(
+        "MaintenanceSchedule",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     auth_identities = relationship(
         "AuthIdentity",
         back_populates="user",
@@ -91,6 +97,12 @@ class User(Base):
 
     homes = relationship(
         "Home",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    maintenance_schedules = relationship(
+        "MaintenanceSchedule",
         back_populates="user",
         cascade="all, delete-orphan",
     )

@@ -199,3 +199,53 @@ def test_cross_user_ownership_is_blocked(app_client):
         headers=intruder_headers,
     )
     assert blocked_area_create.status_code == 404
+
+
+def test_maintenance_schedule_complete_creates_history(app_client):
+    client, SessionLocal, state, token = _bootstrap_logged_in_user(app_client, "scheduler@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    home_response = client.post(
+        "/homes",
+        json={
+            "name": "Schedule Home",
+            "address": "22 Cedar Road",
+            "property_type": "House",
+            "year_built": 2005,
+        },
+        headers=headers,
+    )
+    assert home_response.status_code == 201, home_response.text
+    home_id = home_response.json()["id"]
+
+    schedule_response = client.post(
+        f"/homes/{home_id}/schedules",
+        json={
+            "title": "Replace HVAC filter",
+            "description": "Quarterly filter change",
+            "frequency": "quarterly",
+            "next_due_date": "2026-09-15",
+            "reminder_enabled": True,
+        },
+        headers=headers,
+    )
+    assert schedule_response.status_code == 201, schedule_response.text
+    schedule_id = schedule_response.json()["id"]
+
+    complete_response = client.post(
+        f"/homes/{home_id}/schedules/{schedule_id}/complete",
+        headers=headers,
+    )
+    assert complete_response.status_code == 200, complete_response.text
+    payload = complete_response.json()
+    assert payload["schedule"]["last_completed"] is not None
+    assert payload["maintenance_record"] is not None
+    assert payload["maintenance_record"]["title"] == "Replace HVAC filter"
+
+    list_schedules = client.get(f"/homes/{home_id}/schedules", headers=headers)
+    assert list_schedules.status_code == 200
+    assert len(list_schedules.json()) == 1
+
+    list_records = client.get(f"/homes/{home_id}/maintenance", headers=headers)
+    assert list_records.status_code == 200
+    assert len(list_records.json()) == 1

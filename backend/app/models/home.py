@@ -73,6 +73,12 @@ class Home(Base):
         cascade="all, delete-orphan",
     )
 
+    maintenance_schedules = relationship(
+        "MaintenanceSchedule",
+        back_populates="home",
+        cascade="all, delete-orphan",
+    )
+
     user = relationship(
         "User",
         back_populates="homes",
