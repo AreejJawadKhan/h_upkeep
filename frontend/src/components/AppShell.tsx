@@ -28,6 +28,9 @@ export function AppShell() {
           <NavLink to="/app/schedules" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Schedules
           </NavLink>
+          <NavLink to="/app/spending" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Spending
+          </NavLink>
           <NavLink to="/app/maintenance" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Maintenance
           </NavLink>

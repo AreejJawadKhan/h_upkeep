@@ -1,5 +1,12 @@
 from app.schemas.area import AreaCreate, AreaResponse, AreaUpdate
 from app.schemas.asset import AssetCreate, AssetResponse, AssetUpdate
+from app.schemas.analytics import (
+    SpendingAssetSummary,
+    SpendingCategorySummary,
+    SpendingOverviewResponse,
+    SpendingPeriodSummary,
+    SpendingRecordSummary,
+)
 from app.schemas.auth import (
     LoginRequest,
     MessageResponse,
@@ -28,6 +35,11 @@ __all__ = [
     "AssetCreate",
     "AssetResponse",
     "AssetUpdate",
+    "SpendingAssetSummary",
+    "SpendingCategorySummary",
+    "SpendingOverviewResponse",
+    "SpendingPeriodSummary",
+    "SpendingRecordSummary",
     "LoginRequest",
     "MessageResponse",
     "PasswordResetConfirm",

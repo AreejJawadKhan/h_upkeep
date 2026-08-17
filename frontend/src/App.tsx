@@ -10,6 +10,7 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { SchedulesPage } from './pages/SchedulesPage';
+import { SpendingPage } from './pages/SpendingPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
@@ -49,6 +50,7 @@ export function App() {
         <Route index element={<Navigate to="homes" replace />} />
         <Route path="homes" element={<HomesPage />} />
         <Route path="schedules" element={<SchedulesPage />} />
+        <Route path="spending" element={<SpendingPage />} />
         <Route path="maintenance" element={<MaintenancePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

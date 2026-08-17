@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
+from app.core.time import utc_now
 from app.models.email_verification import EmailVerificationToken
 from app.models.user import User
 
@@ -303,3 +306,166 @@ def test_maintenance_schedule_update_and_delete(app_client):
     list_schedules = client.get(f"/homes/{home_id}/schedules", headers=headers)
     assert list_schedules.status_code == 200
     assert list_schedules.json() == []
+
+
+def test_spending_analytics_are_derived_from_records(app_client):
+    client, SessionLocal, state, token = _bootstrap_logged_in_user(app_client, "analytics@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    home_one = client.post(
+        "/homes",
+        json={
+            "name": "Analytics Home",
+            "address": "12 Willow Street",
+            "property_type": "House",
+            "year_built": 2008,
+        },
+        headers=headers,
+    )
+    assert home_one.status_code == 201, home_one.text
+    home_one_id = home_one.json()["id"]
+
+    home_two = client.post(
+        "/homes",
+        json={
+            "name": "Second Home",
+            "address": "99 Birch Avenue",
+            "property_type": "Townhouse",
+            "year_built": 2014,
+        },
+        headers=headers,
+    )
+    assert home_two.status_code == 201, home_two.text
+    home_two_id = home_two.json()["id"]
+
+    furnace = client.post(
+        f"/homes/{home_one_id}/assets",
+        json={
+            "name": "Furnace",
+            "category": "HVAC",
+            "manufacturer": "Lennox",
+            "model": "XC25",
+            "serial_number": "FUR-100",
+            "purchase_date": "2024-01-10",
+            "installation_date": "2024-01-11",
+            "expected_lifespan": 15,
+            "notes": "Primary heating unit",
+            "area_id": None,
+        },
+        headers=headers,
+    )
+    assert furnace.status_code == 201, furnace.text
+    furnace_id = furnace.json()["id"]
+
+    sink = client.post(
+        f"/homes/{home_one_id}/assets",
+        json={
+            "name": "Kitchen Sink",
+            "category": "Plumbing",
+            "manufacturer": "Delta",
+            "model": "Classic",
+            "serial_number": "SINK-200",
+            "purchase_date": "2023-06-15",
+            "installation_date": "2023-06-16",
+            "expected_lifespan": 12,
+            "notes": "Main kitchen sink",
+            "area_id": None,
+        },
+        headers=headers,
+    )
+    assert sink.status_code == 201, sink.text
+    sink_id = sink.json()["id"]
+
+    today = utc_now().date()
+    previous_year = today - timedelta(days=365)
+
+    records = [
+        {
+            "home_id": home_one_id,
+            "title": "Filter change",
+            "description": "Quarterly filter replacement",
+            "item": "Furnace",
+            "category": "HVAC",
+            "date": today.isoformat(),
+            "cost": 100.0,
+            "service_provider": "HeatCo",
+            "next_due_date": None,
+            "image_url": None,
+            "asset_id": furnace_id,
+        },
+        {
+            "home_id": home_one_id,
+            "title": "Pipe repair",
+            "description": "Minor kitchen leak",
+            "item": "Sink",
+            "category": "Plumbing",
+            "date": today.isoformat(),
+            "cost": 50.0,
+            "service_provider": "FlowFix",
+            "next_due_date": None,
+            "image_url": None,
+            "asset_id": sink_id,
+        },
+        {
+            "home_id": home_one_id,
+            "title": "Annual tune-up",
+            "description": "Yearly service",
+            "item": "Furnace",
+            "category": "HVAC",
+            "date": previous_year.isoformat(),
+            "cost": 200.0,
+            "service_provider": "HeatCo",
+            "next_due_date": None,
+            "image_url": None,
+            "asset_id": furnace_id,
+        },
+    ]
+
+    for record in records:
+        response = client.post(
+            f"/homes/{record['home_id']}/maintenance",
+            json=record,
+            headers=headers,
+        )
+        assert response.status_code == 201, response.text
+
+    home_two_record = client.post(
+        f"/homes/{home_two_id}/maintenance",
+        json={
+            "title": "Exterior cleanup",
+            "description": "Seasonal clean",
+            "item": "Exterior",
+            "category": "Cleaning",
+            "date": today.isoformat(),
+            "cost": 40.0,
+            "service_provider": "Sparkle Team",
+            "next_due_date": None,
+            "image_url": None,
+            "asset_id": None,
+        },
+        headers=headers,
+    )
+    assert home_two_record.status_code == 201, home_two_record.text
+
+    global_overview = client.get("/analytics/spending", headers=headers)
+    assert global_overview.status_code == 200, global_overview.text
+    global_payload = global_overview.json()
+    assert global_payload["record_count"] == 4
+    assert global_payload["total_spend"] == 390.0
+    assert global_payload["this_month_spend"] == 190.0
+    assert global_payload["this_year_spend"] == 190.0
+    assert global_payload["previous_year_spend"] == 200.0
+    assert global_payload["category_breakdown"][0]["category"] == "HVAC"
+    assert global_payload["category_breakdown"][0]["total_spend"] == 300.0
+    assert global_payload["asset_breakdown"][0]["asset_name"] == "Furnace"
+    assert global_payload["asset_breakdown"][0]["total_spend"] == 300.0
+
+    scoped_overview = client.get(f"/analytics/spending?home_id={home_one_id}", headers=headers)
+    assert scoped_overview.status_code == 200, scoped_overview.text
+    scoped_payload = scoped_overview.json()
+    assert scoped_payload["scope_home_id"] == home_one_id
+    assert scoped_payload["scope_home_name"] == "Analytics Home"
+    assert scoped_payload["record_count"] == 3
+    assert scoped_payload["total_spend"] == 350.0
+    assert scoped_payload["this_month_spend"] == 150.0
+    assert scoped_payload["previous_year_spend"] == 200.0

@@ -26,6 +26,7 @@ from app.models import (  # noqa: F401
 
 from app.api.auth import router as auth_router
 from app.api.area import router as area_router
+from app.api.analytics import router as analytics_router
 from app.api.asset import router as asset_router
 from app.api.home import router as home_router
 from app.api.maintenance import router as maintenance_router
@@ -48,7 +49,7 @@ app = FastAPI(
         "Backend API for HomeRepair Log — a production-minded home maintenance "
         "management system. See /docs for interactive Swagger UI."
     ),
-    version="0.7.0",
+    version="0.8.0",
 )
 
 # ---------------------------------------------------------------------------
@@ -91,6 +92,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(area_router)
+app.include_router(analytics_router)
 app.include_router(asset_router)
 app.include_router(home_router)
 app.include_router(maintenance_router)
@@ -103,7 +105,7 @@ app.include_router(maintenance_schedule_router)
 
 @app.get("/", tags=["Health"])
 def root():
-    return {"message": "HomeRepair Log API is running", "version": "0.7.0"}
+    return {"message": "HomeRepair Log API is running", "version": "0.8.0"}
 
 
 @app.get("/health", tags=["Health"])

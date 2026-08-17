@@ -1,6 +1,6 @@
 from datetime import date as date_type, datetime
 
-from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Date, DateTime, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.time import utc_now
@@ -9,6 +9,12 @@ from app.db.database import Base
 
 class MaintenanceRecord(Base):
     __tablename__ = "maintenance_records"
+
+    __table_args__ = (
+        Index("ix_maintenance_records_user_home_date", "user_id", "home_id", "date"),
+        Index("ix_maintenance_records_user_category_date", "user_id", "category", "date"),
+        Index("ix_maintenance_records_user_asset_date", "user_id", "asset_id", "date"),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,

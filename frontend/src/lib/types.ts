@@ -115,6 +115,54 @@ export type MaintenanceScheduleCompleteResponse = {
   maintenance_record: MaintenanceRecord | null;
 };
 
+export type SpendingPeriodSummary = {
+  label: string;
+  total_spend: number;
+  record_count: number;
+};
+
+export type SpendingCategorySummary = {
+  category: string;
+  total_spend: number;
+  record_count: number;
+};
+
+export type SpendingAssetSummary = {
+  asset_id: number | null;
+  asset_name: string;
+  total_spend: number;
+  record_count: number;
+};
+
+export type SpendingRecordSummary = {
+  id: number;
+  title: string;
+  date: string;
+  category: string;
+  cost: number;
+  service_provider: string | null;
+  home_id: number;
+  home_name: string;
+  asset_id: number | null;
+  asset_name: string | null;
+  created_at: string;
+};
+
+export type SpendingOverviewResponse = {
+  scope_home_id: number | null;
+  scope_home_name: string | null;
+  total_spend: number;
+  this_month_spend: number;
+  this_year_spend: number;
+  previous_year_spend: number;
+  average_cost: number;
+  record_count: number;
+  monthly_trend: SpendingPeriodSummary[];
+  category_breakdown: SpendingCategorySummary[];
+  asset_breakdown: SpendingAssetSummary[];
+  recent_records: SpendingRecordSummary[];
+};
+
 export type ApiErrorShape = {
   detail?: string;
   message?: string;
