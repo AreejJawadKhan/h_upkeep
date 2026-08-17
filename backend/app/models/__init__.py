@@ -9,6 +9,7 @@ from app.models.asset import Asset
 from app.models.maintenance import MaintenanceRecord
 from app.models.maintenance_document import MaintenanceDocument
 from app.models.maintenance_schedule import MaintenanceSchedule
+from app.models.warranty import Warranty
 
 __all__ = [
     "User",
@@ -22,4 +23,5 @@ __all__ = [
     "MaintenanceRecord",
     "MaintenanceDocument",
     "MaintenanceSchedule",
+    "Warranty",
 ]

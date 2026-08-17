@@ -16,7 +16,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.maintenance import MaintenanceRecord
 from app.models.maintenance_document import MaintenanceDocument
-from app.schemas.maintenance_document import MaintenanceDocumentUpload
+from app.schemas.maintenance_document import HomeDocumentResponse, MaintenanceDocumentUpload
+from app.services.home import get_home
 
 MAX_DOCUMENT_BYTES = 15 * 1024 * 1024
 ALLOWED_MIME_TYPES = {
@@ -312,3 +313,29 @@ def delete_document(
     )
     db.delete(document)
     db.commit()
+
+
+def get_home_documents(
+    db: Session,
+    *,
+    user_id: int,
+    home_id: int,
+) -> list[HomeDocumentResponse] | None:
+    home = get_home(db=db, home_id=home_id, user_id=user_id)
+    if home is None:
+        return None
+
+    documents = (
+        db.query(MaintenanceDocument)
+        .join(MaintenanceRecord, MaintenanceDocument.maintenance_id == MaintenanceRecord.id)
+        .filter(
+            MaintenanceDocument.user_id == user_id,
+            MaintenanceRecord.home_id == home_id,
+        )
+        .order_by(MaintenanceDocument.created_at.desc())
+        .all()
+    )
+
+    for document in documents:
+        setattr(document, "maintenance_title", document.maintenance.title)
+    return documents

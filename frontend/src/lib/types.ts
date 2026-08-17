@@ -127,6 +127,30 @@ export type MaintenanceDocument = {
   created_at: string;
 };
 
+export type HomeDocument = {
+  id: number;
+  maintenance_id: number;
+  maintenance_title: string;
+  file_name: string;
+  file_type: string;
+  cloudinary_url: string;
+  created_at: string;
+};
+
+export type Warranty = {
+  id: number;
+  user_id: number;
+  home_id: number;
+  asset_id: number;
+  document_id: number | null;
+  provider: string;
+  coverage_details: string | null;
+  start_date: string;
+  expiration_date: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SpendingPeriodSummary = {
   label: string;
   total_spend: number;

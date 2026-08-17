@@ -77,6 +77,12 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
+    warranties = relationship(
+        "Warranty",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     auth_identities = relationship(
         "AuthIdentity",
         back_populates="user",

@@ -105,3 +105,9 @@ class Asset(Base):
         "MaintenanceSchedule",
         back_populates="asset",
     )
+
+    warranties = relationship(
+        "Warranty",
+        back_populates="asset",
+        cascade="all, delete-orphan",
+    )

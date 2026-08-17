@@ -70,3 +70,8 @@ class MaintenanceDocument(Base):
         "User",
         back_populates="maintenance_documents",
     )
+
+    warranties = relationship(
+        "Warranty",
+        back_populates="document",
+    )

@@ -553,3 +553,127 @@ def test_maintenance_documents_upload_list_and_delete(app_client, monkeypatch):
     )
     assert list_after_delete.status_code == 200
     assert list_after_delete.json() == []
+
+
+def test_warranties_and_home_documents_smoke(app_client, monkeypatch):
+    client, SessionLocal, state, token = _bootstrap_logged_in_user(app_client, "warranties@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    home_response = client.post(
+        "/homes",
+        json={
+            "name": "Warranty Home",
+            "address": "77 Cedar Court",
+            "property_type": "House",
+            "year_built": 2015,
+        },
+        headers=headers,
+    )
+    assert home_response.status_code == 201, home_response.text
+    home_id = home_response.json()["id"]
+
+    asset_response = client.post(
+        f"/homes/{home_id}/assets",
+        json={
+            "name": "Water heater",
+            "category": "Appliance",
+            "manufacturer": "Rheem",
+            "model": "ProTerra",
+            "serial_number": "WH-100",
+            "purchase_date": "2025-01-01",
+            "installation_date": "2025-01-02",
+            "expected_lifespan": 10,
+            "notes": "Garage unit",
+            "area_id": None,
+        },
+        headers=headers,
+    )
+    assert asset_response.status_code == 201, asset_response.text
+    asset_id = asset_response.json()["id"]
+
+    maintenance_response = client.post(
+        f"/homes/{home_id}/maintenance",
+        json={
+            "title": "Water heater inspection",
+            "description": "Warranty attachment",
+            "item": "Water heater",
+            "category": "Appliance",
+            "date": "2026-08-17",
+            "cost": 150.0,
+            "service_provider": "HotWater Co.",
+            "next_due_date": None,
+            "image_url": None,
+            "asset_id": asset_id,
+        },
+        headers=headers,
+    )
+    assert maintenance_response.status_code == 201, maintenance_response.text
+    maintenance_id = maintenance_response.json()["id"]
+
+    def fake_upload(*, document, public_id):
+        return {
+            "public_id": public_id,
+            "secure_url": f"https://res.cloudinary.com/test/{public_id}",
+            "resource_type": "raw",
+        }
+
+    def fake_delete(*, public_id, resource_type):
+        return {"result": "ok", "public_id": public_id, "resource_type": resource_type}
+
+    monkeypatch.setattr(document_service, "upload_document_to_cloudinary", fake_upload)
+    monkeypatch.setattr(document_service, "delete_document_from_cloudinary", fake_delete)
+
+    upload_response = client.post(
+        f"/homes/{home_id}/maintenance/{maintenance_id}/documents",
+        json={
+            "file_name": "warranty.pdf",
+            "file_type": "application/pdf",
+            "data_url": "data:application/pdf;base64,JVBERi0xLjQK",
+        },
+        headers=headers,
+    )
+    assert upload_response.status_code == 201, upload_response.text
+    document_id = upload_response.json()["id"]
+
+    home_documents = client.get(f"/homes/{home_id}/documents", headers=headers)
+    assert home_documents.status_code == 200, home_documents.text
+    assert len(home_documents.json()) == 1
+    assert home_documents.json()[0]["maintenance_title"] == "Water heater inspection"
+
+    warranty_response = client.post(
+        f"/homes/{home_id}/warranties",
+        json={
+            "provider": "Rheem",
+            "coverage_details": "Parts and labor",
+            "start_date": "2025-01-01",
+            "expiration_date": "2027-01-01",
+            "asset_id": asset_id,
+            "document_id": document_id,
+        },
+        headers=headers,
+    )
+    assert warranty_response.status_code == 201, warranty_response.text
+    warranty_id = warranty_response.json()["id"]
+    assert warranty_response.json()["document_id"] == document_id
+
+    list_warranties = client.get(f"/homes/{home_id}/warranties?asset_id={asset_id}", headers=headers)
+    assert list_warranties.status_code == 200, list_warranties.text
+    assert len(list_warranties.json()) == 1
+
+    update_warranty = client.patch(
+        f"/homes/{home_id}/warranties/{warranty_id}",
+        json={
+            "provider": "Rheem Plus",
+            "expiration_date": "2027-06-01",
+        },
+        headers=headers,
+    )
+    assert update_warranty.status_code == 200, update_warranty.text
+    assert update_warranty.json()["provider"] == "Rheem Plus"
+
+    delete_warranty = client.delete(f"/homes/{home_id}/warranties/{warranty_id}", headers=headers)
+    assert delete_warranty.status_code == 204, delete_warranty.text
+
+    list_after_delete = client.get(f"/homes/{home_id}/warranties", headers=headers)
+    assert list_after_delete.status_code == 200
+    assert list_after_delete.json() == []

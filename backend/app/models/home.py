@@ -79,6 +79,12 @@ class Home(Base):
         cascade="all, delete-orphan",
     )
 
+    warranties = relationship(
+        "Warranty",
+        back_populates="home",
+        cascade="all, delete-orphan",
+    )
+
     user = relationship(
         "User",
         back_populates="homes",

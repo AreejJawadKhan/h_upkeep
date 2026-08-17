@@ -30,9 +30,13 @@ from app.api.area import router as area_router
 from app.api.analytics import router as analytics_router
 from app.api.asset import router as asset_router
 from app.api.home import router as home_router
-from app.api.maintenance_document import router as maintenance_document_router
+from app.api.maintenance_document import (
+    home_documents_router,
+    router as maintenance_document_router,
+)
 from app.api.maintenance import router as maintenance_router
 from app.api.maintenance_schedule import router as maintenance_schedule_router
+from app.api.warranty import router as warranty_router
 
 # ---------------------------------------------------------------------------
 # Schema / table creation
@@ -99,7 +103,9 @@ app.include_router(asset_router)
 app.include_router(home_router)
 app.include_router(maintenance_router)
 app.include_router(maintenance_document_router)
+app.include_router(home_documents_router)
 app.include_router(maintenance_schedule_router)
+app.include_router(warranty_router)
 
 
 # ---------------------------------------------------------------------------

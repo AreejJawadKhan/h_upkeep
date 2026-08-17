@@ -22,6 +22,7 @@ from app.schemas.auth import (
 from app.schemas.home import HomeCreate, HomeResponse, HomeUpdate
 from app.schemas.maintenance import MaintenanceCreate, MaintenanceResponse, MaintenanceUpdate
 from app.schemas.maintenance_document import (
+    HomeDocumentResponse,
     MaintenanceDocumentResponse,
     MaintenanceDocumentUpload,
 )
@@ -31,6 +32,7 @@ from app.schemas.maintenance_schedule import (
     MaintenanceScheduleResponse,
     MaintenanceScheduleUpdate,
 )
+from app.schemas.warranty import WarrantyCreate, WarrantyResponse, WarrantyUpdate
 
 __all__ = [
     "AreaCreate",
@@ -61,9 +63,13 @@ __all__ = [
     "MaintenanceResponse",
     "MaintenanceUpdate",
     "MaintenanceDocumentUpload",
+    "HomeDocumentResponse",
     "MaintenanceDocumentResponse",
     "MaintenanceScheduleCreate",
     "MaintenanceScheduleResponse",
     "MaintenanceScheduleUpdate",
     "MaintenanceScheduleCompleteResponse",
+    "WarrantyCreate",
+    "WarrantyResponse",
+    "WarrantyUpdate",
 ]

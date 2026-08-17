@@ -5,6 +5,7 @@ from app.db.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.schemas.maintenance_document import (
+    HomeDocumentResponse,
     MaintenanceDocumentResponse,
     MaintenanceDocumentUpload,
 )
@@ -14,6 +15,7 @@ from app.services.maintenance_document import (
     create_document,
     delete_document,
     get_document,
+    get_home_documents,
     get_documents,
 )
 
@@ -21,6 +23,11 @@ from app.services.maintenance_document import (
 router = APIRouter(
     prefix="/homes/{home_id}/maintenance/{maintenance_id}/documents",
     tags=["Maintenance Documents"],
+)
+
+home_documents_router = APIRouter(
+    prefix="/homes/{home_id}/documents",
+    tags=["Home Documents"],
 )
 
 
@@ -124,3 +131,22 @@ def delete_maintenance_document(
     except DocumentStorageUnavailableError as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     return None
+
+
+@home_documents_router.get(
+    "",
+    response_model=list[HomeDocumentResponse],
+)
+def list_home_documents(
+    home_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    documents = get_home_documents(
+        db=db,
+        user_id=current_user.id,
+        home_id=home_id,
+    )
+    if documents is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Home not found")
+    return documents
