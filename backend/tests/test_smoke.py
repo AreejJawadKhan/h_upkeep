@@ -5,6 +5,7 @@ from datetime import timedelta
 from app.core.time import utc_now
 from app.models.email_verification import EmailVerificationToken
 from app.models.user import User
+from app.services import maintenance_document as document_service
 
 
 def _register(client, *, email: str, name: str = "Test User") -> None:
@@ -469,3 +470,86 @@ def test_spending_analytics_are_derived_from_records(app_client):
     assert scoped_payload["total_spend"] == 350.0
     assert scoped_payload["this_month_spend"] == 150.0
     assert scoped_payload["previous_year_spend"] == 200.0
+
+
+def test_maintenance_documents_upload_list_and_delete(app_client, monkeypatch):
+    client, SessionLocal, state, token = _bootstrap_logged_in_user(app_client, "documents@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    home_response = client.post(
+        "/homes",
+        json={
+            "name": "Documents Home",
+            "address": "33 Paper Street",
+            "property_type": "House",
+            "year_built": 2012,
+        },
+        headers=headers,
+    )
+    assert home_response.status_code == 201, home_response.text
+    home_id = home_response.json()["id"]
+
+    maintenance_response = client.post(
+        f"/homes/{home_id}/maintenance",
+        json={
+            "title": "Roof inspection",
+            "description": "Annual roof review",
+            "item": "Roof",
+            "category": "Structural",
+            "date": "2026-08-17",
+            "cost": 250.0,
+            "service_provider": "TopView",
+            "next_due_date": None,
+            "image_url": None,
+            "asset_id": None,
+        },
+        headers=headers,
+    )
+    assert maintenance_response.status_code == 201, maintenance_response.text
+    maintenance_id = maintenance_response.json()["id"]
+
+    def fake_upload(*, document, public_id):
+        return {
+            "public_id": public_id,
+            "secure_url": f"https://res.cloudinary.com/test/{public_id}",
+            "resource_type": "raw",
+        }
+
+    def fake_delete(*, public_id, resource_type):
+        return {"result": "ok", "public_id": public_id, "resource_type": resource_type}
+
+    monkeypatch.setattr(document_service, "upload_document_to_cloudinary", fake_upload)
+    monkeypatch.setattr(document_service, "delete_document_from_cloudinary", fake_delete)
+
+    upload_response = client.post(
+        f"/homes/{home_id}/maintenance/{maintenance_id}/documents",
+        json={
+            "file_name": "receipt.pdf",
+            "file_type": "application/pdf",
+            "data_url": "data:application/pdf;base64,JVBERi0xLjQK",
+        },
+        headers=headers,
+    )
+    assert upload_response.status_code == 201, upload_response.text
+    document_id = upload_response.json()["id"]
+    assert upload_response.json()["file_name"] == "receipt.pdf"
+
+    list_response = client.get(
+        f"/homes/{home_id}/maintenance/{maintenance_id}/documents",
+        headers=headers,
+    )
+    assert list_response.status_code == 200, list_response.text
+    assert len(list_response.json()) == 1
+
+    delete_response = client.delete(
+        f"/homes/{home_id}/maintenance/{maintenance_id}/documents/{document_id}",
+        headers=headers,
+    )
+    assert delete_response.status_code == 204, delete_response.text
+
+    list_after_delete = client.get(
+        f"/homes/{home_id}/maintenance/{maintenance_id}/documents",
+        headers=headers,
+    )
+    assert list_after_delete.status_code == 200
+    assert list_after_delete.json() == []

@@ -7,6 +7,7 @@ from app.models.home import Home
 from app.models.area import Area
 from app.models.asset import Asset
 from app.models.maintenance import MaintenanceRecord
+from app.models.maintenance_document import MaintenanceDocument
 from app.models.maintenance_schedule import MaintenanceSchedule
 
 __all__ = [
@@ -19,5 +20,6 @@ __all__ = [
     "Area",
     "Asset",
     "MaintenanceRecord",
+    "MaintenanceDocument",
     "MaintenanceSchedule",
 ]

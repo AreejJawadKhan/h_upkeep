@@ -115,6 +115,18 @@ export type MaintenanceScheduleCompleteResponse = {
   maintenance_record: MaintenanceRecord | null;
 };
 
+export type MaintenanceDocument = {
+  id: number;
+  maintenance_id: number;
+  user_id: number;
+  file_name: string;
+  file_type: string;
+  cloudinary_public_id: string;
+  cloudinary_resource_type: string;
+  cloudinary_url: string;
+  created_at: string;
+};
+
 export type SpendingPeriodSummary = {
   label: string;
   total_spend: number;

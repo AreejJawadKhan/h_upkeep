@@ -11,6 +11,7 @@ import { LoginPage } from './pages/LoginPage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { SchedulesPage } from './pages/SchedulesPage';
 import { SpendingPage } from './pages/SpendingPage';
+import { DocumentsPage } from './pages/DocumentsPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
@@ -51,6 +52,7 @@ export function App() {
         <Route path="homes" element={<HomesPage />} />
         <Route path="schedules" element={<SchedulesPage />} />
         <Route path="spending" element={<SpendingPage />} />
+        <Route path="documents" element={<DocumentsPage />} />
         <Route path="maintenance" element={<MaintenancePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

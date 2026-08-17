@@ -112,3 +112,9 @@ class MaintenanceRecord(Base):
         "Asset",
         back_populates="maintenance_records",
     )
+
+    documents = relationship(
+        "MaintenanceDocument",
+        back_populates="maintenance",
+        cascade="all, delete-orphan",
+    )

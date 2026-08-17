@@ -65,6 +65,12 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
+    maintenance_documents = relationship(
+        "MaintenanceDocument",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     maintenance_schedules = relationship(
         "MaintenanceSchedule",
         back_populates="user",
