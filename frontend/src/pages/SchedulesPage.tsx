@@ -40,7 +40,7 @@ const emptyForm: ScheduleForm = {
 };
 
 function normalizeScheduleDate(date: string | null | undefined) {
-  return date ? new Date(`${date}T00:00:00`) : null;
+  return date ? new Date(`${date}T00:00:00Z`) : null;
 }
 
 export function SchedulesPage() {

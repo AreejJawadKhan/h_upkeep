@@ -22,6 +22,9 @@ export function AppShell() {
         </p>
 
         <nav className="sidebar-nav">
+          <NavLink to="/app/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Dashboard
+          </NavLink>
           <NavLink to="/app/homes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Homes
           </NavLink>
@@ -40,9 +43,6 @@ export function AppShell() {
           <NavLink to="/app/maintenance" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Maintenance
           </NavLink>
-          <span className="nav-link nav-link-muted" aria-disabled="true">
-            Dashboard <span>soon</span>
-          </span>
         </nav>
 
         <div className="sidebar-footer">

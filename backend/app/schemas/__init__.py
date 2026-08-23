@@ -7,6 +7,13 @@ from app.schemas.analytics import (
     SpendingPeriodSummary,
     SpendingRecordSummary,
 )
+from app.schemas.dashboard import (
+    DashboardActivityItem,
+    DashboardHomeHealthItem,
+    DashboardOverviewResponse,
+    DashboardUpcomingItem,
+    DashboardWarrantyAlert,
+)
 from app.schemas.auth import (
     LoginRequest,
     MessageResponse,
@@ -46,6 +53,11 @@ __all__ = [
     "SpendingOverviewResponse",
     "SpendingPeriodSummary",
     "SpendingRecordSummary",
+    "DashboardActivityItem",
+    "DashboardHomeHealthItem",
+    "DashboardOverviewResponse",
+    "DashboardUpcomingItem",
+    "DashboardWarrantyAlert",
     "LoginRequest",
     "MessageResponse",
     "PasswordResetConfirm",

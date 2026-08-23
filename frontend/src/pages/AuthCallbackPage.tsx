@@ -15,6 +15,11 @@ export function AuthCallbackPage() {
   const token = useMemo(() => parseFragment().get('access_token') ?? '', []);
 
   useEffect(() => {
+    if (!window.location.hash) return;
+    window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  }, []);
+
+  useEffect(() => {
     if (user) {
       setStatus('done');
       return;
@@ -49,4 +54,3 @@ export function AuthCallbackPage() {
     </main>
   );
 }
-

@@ -4,7 +4,8 @@ export function formatDate(value: string | null | undefined) {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  }).format(new Date(value));
+    timeZone: 'UTC',
+  }).format(new Date(`${value}T00:00:00Z`));
 }
 
 export function initials(name: string) {

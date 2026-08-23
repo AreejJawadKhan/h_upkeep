@@ -12,6 +12,7 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from app.core.config import settings  # noqa: E402
+from app.core.database_url import normalize_database_url  # noqa: E402
 from app.db.database import Base  # noqa: E402
 from app.models import (  # noqa: E402,F401
     Asset,
@@ -36,7 +37,7 @@ target_metadata = Base.metadata
 def _configure_context(connection=None) -> None:
     context.configure(
         connection=connection,
-        url=settings.DATABASE_URL if connection is None else None,
+        url=str(normalize_database_url(settings.DATABASE_URL)) if connection is None else None,
         target_metadata=target_metadata,
         compare_type=True,
         render_as_batch=(connection is not None and connection.dialect.name == "sqlite"),
@@ -51,7 +52,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     connectable = create_engine(
-        settings.DATABASE_URL,
+        str(normalize_database_url(settings.DATABASE_URL)),
         poolclass=pool.NullPool,
     )
 

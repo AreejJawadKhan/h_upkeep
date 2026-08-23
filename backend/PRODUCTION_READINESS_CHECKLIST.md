@@ -6,6 +6,7 @@ below are complete.
 
 ## Still required before production
 
+1. Set `APP_ENV=production`.
 1. Provision PostgreSQL for production.
 1. Set `DATABASE_URL` to the production PostgreSQL connection string.
 1. Set `AUTO_CREATE_TABLES=false` in production.
@@ -31,6 +32,7 @@ below are complete.
 1. Run the frontend build:
    - `npm run build`
 1. Deploy over HTTPS with secure headers and logging.
+1. Keep secrets out of tracked repo files. `backend/alembic.ini` should remain secret-free and the tracked `backend/.env.example` should be used as the template for deployment values.
 
 ## Local verification commands
 

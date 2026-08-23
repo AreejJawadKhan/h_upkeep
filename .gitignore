@@ -12,11 +12,18 @@ ENV/
 # Environment variables
 .env
 .env.*
+!.env.example
+!backend/.env.example
+!/frontend/.env.example
+frontend/.env.local
 
 # Databases
 *.db
 *.sqlite
 *.sqlite3
+
+# Production docs / deployment notes
+backend/PRODUCTION_READINESS_CHECKLIST.md
 
 # IDE
 .vscode/

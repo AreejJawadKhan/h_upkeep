@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine
-from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core.config import settings
+from app.core.database_url import normalize_database_url
 
-database_url = make_url(settings.DATABASE_URL)
+database_url = normalize_database_url(settings.DATABASE_URL)
 
 engine_kwargs = {}
 if database_url.get_backend_name() == "sqlite":
@@ -12,9 +12,12 @@ if database_url.get_backend_name() == "sqlite":
 else:
     # Helps keep long-lived production connections healthy.
     engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_recycle"] = 1800
+    engine_kwargs["pool_size"] = 5
+    engine_kwargs["max_overflow"] = 10
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    str(database_url),
     **engine_kwargs,
 )
 

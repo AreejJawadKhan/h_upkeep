@@ -1,11 +1,14 @@
 import json
-from typing import List
+from typing import List, Literal
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    # --- Runtime mode ---
+    APP_ENV: Literal["development", "test", "production"] = "development"
+
     # --- Database ---
     DATABASE_URL: str = "sqlite:///./home_repair_log.db"
     AUTO_CREATE_TABLES: bool = True
@@ -65,6 +68,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    @property
+    def is_production(self) -> bool:
+        return self.APP_ENV == "production"
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: object) -> List[str]:
@@ -83,6 +90,56 @@ class Settings(BaseSettings):
                 pass
             return [o.strip() for o in v.split(",") if o.strip()]
         return v  # already a list (from default)
+
+    @field_validator("CORS_ORIGINS")
+    @classmethod
+    def validate_cors_origins(cls, v: List[str]) -> List[str]:
+        cleaned = [origin.strip() for origin in v if origin and origin.strip()]
+        if not cleaned:
+            raise ValueError("CORS_ORIGINS must contain at least one origin")
+        return cleaned
+
+    @model_validator(mode="after")
+    def validate_production_settings(self) -> "Settings":
+        if not self.is_production:
+            return self
+
+        errors: list[str] = []
+
+        if self.DATABASE_URL.startswith("sqlite:"):
+            errors.append("DATABASE_URL must point to PostgreSQL in production")
+
+        if self.JWT_SECRET in {"", "set-via-env"}:
+            errors.append("JWT_SECRET must be set to a strong random value")
+
+        if self.SESSION_SECRET_KEY in {"", "set-via-env"}:
+            errors.append("SESSION_SECRET_KEY must be set to a strong random value")
+
+        if not self.COOKIE_SECURE:
+            errors.append("COOKIE_SECURE must be true in production")
+
+        if self.MAIL_CONSOLE_MODE:
+            errors.append("MAIL_CONSOLE_MODE must be false in production")
+
+        if any(origin == "*" for origin in self.CORS_ORIGINS):
+            errors.append("CORS_ORIGINS must not include wildcard origins in production")
+
+        if any(origin.startswith("http://localhost") for origin in self.CORS_ORIGINS):
+            errors.append("CORS_ORIGINS must not include localhost origins in production")
+
+        if not self.FRONTEND_URL.startswith("https://"):
+            errors.append("FRONTEND_URL must use HTTPS in production")
+
+        if not self.GOOGLE_CLIENT_ID or not self.GOOGLE_CLIENT_SECRET:
+            errors.append("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set in production")
+
+        if self.GOOGLE_REDIRECT_URI and not self.GOOGLE_REDIRECT_URI.startswith("https://"):
+            errors.append("GOOGLE_REDIRECT_URI must use HTTPS in production")
+
+        if errors:
+            raise ValueError("Production settings invalid: " + "; ".join(errors))
+
+        return self
 
 
 settings = Settings()

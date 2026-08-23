@@ -151,6 +151,80 @@ export type Warranty = {
   updated_at: string;
 };
 
+export type DashboardUpcomingItem = {
+  kind: 'maintenance' | 'schedule';
+  title: string;
+  description: string;
+  due_date: string | null;
+  home_id: number;
+  home_name: string;
+  asset_id: number | null;
+  asset_name: string | null;
+  status: 'overdue' | 'due_soon' | 'on_track';
+  source_id: number;
+};
+
+export type DashboardWarrantyAlert = {
+  status: 'expired' | 'expiring_soon';
+  provider: string;
+  asset_name: string;
+  home_id: number;
+  home_name: string;
+  expiration_date: string;
+  source_id: number;
+  document_id: number | null;
+};
+
+export type DashboardActivityItem = {
+  kind: 'maintenance' | 'schedule' | 'document' | 'warranty';
+  title: string;
+  description: string;
+  timestamp: string;
+  home_id: number;
+  home_name: string;
+  asset_id: number | null;
+  asset_name: string | null;
+  source_id: number;
+};
+
+export type DashboardHomeHealthItem = {
+  home_id: number;
+  home_name: string;
+  asset_count: number;
+  maintenance_record_count: number;
+  schedule_count: number;
+  warranty_count: number;
+  due_soon_count: number;
+  overdue_count: number;
+  expiring_soon_count: number;
+  expired_warranty_count: number;
+  status_label: string;
+  summary: string;
+};
+
+export type DashboardOverviewResponse = {
+  scope_home_id: number | null;
+  scope_home_name: string | null;
+  home_count: number;
+  asset_count: number;
+  maintenance_record_count: number;
+  schedule_count: number;
+  warranty_count: number;
+  due_soon_count: number;
+  overdue_count: number;
+  expiring_soon_count: number;
+  expired_warranty_count: number;
+  total_spend: number;
+  this_month_spend: number;
+  this_year_spend: number;
+  average_cost: number;
+  upcoming_maintenance: DashboardUpcomingItem[];
+  warranty_alerts: DashboardWarrantyAlert[];
+  recent_activity: DashboardActivityItem[];
+  home_health: DashboardHomeHealthItem[];
+  spending: SpendingOverviewResponse;
+};
+
 export type SpendingPeriodSummary = {
   label: string;
   total_spend: number;

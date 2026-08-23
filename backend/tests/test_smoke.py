@@ -677,3 +677,123 @@ def test_warranties_and_home_documents_smoke(app_client, monkeypatch):
     list_after_delete = client.get(f"/homes/{home_id}/warranties", headers=headers)
     assert list_after_delete.status_code == 200
     assert list_after_delete.json() == []
+
+
+def test_dashboard_overview_includes_health_spend_and_alerts(app_client, monkeypatch):
+    client, SessionLocal, state, token = _bootstrap_logged_in_user(app_client, "dashboard@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    home_response = client.post(
+        "/homes",
+        json={
+            "name": "Dashboard Home",
+            "address": "12 Command Street",
+            "property_type": "House",
+            "year_built": 2007,
+        },
+        headers=headers,
+    )
+    assert home_response.status_code == 201, home_response.text
+    home_id = home_response.json()["id"]
+
+    asset_response = client.post(
+        f"/homes/{home_id}/assets",
+        json={
+            "name": "Furnace",
+            "category": "HVAC",
+            "manufacturer": "Lennox",
+            "model": "Elite",
+            "serial_number": "F-200",
+            "purchase_date": "2024-01-01",
+            "installation_date": "2024-01-02",
+            "expected_lifespan": 15,
+            "notes": "Main heating unit",
+            "area_id": None,
+        },
+        headers=headers,
+    )
+    assert asset_response.status_code == 201, asset_response.text
+    asset_id = asset_response.json()["id"]
+
+    maintenance_response = client.post(
+        f"/homes/{home_id}/maintenance",
+        json={
+            "title": "Filter replacement",
+            "description": "Quarterly HVAC service",
+            "item": "Furnace filter",
+            "category": "HVAC",
+            "date": "2026-08-15",
+            "cost": 120.0,
+            "service_provider": "HeatCo",
+            "next_due_date": "2026-08-25",
+            "image_url": None,
+            "asset_id": asset_id,
+        },
+        headers=headers,
+    )
+    assert maintenance_response.status_code == 201, maintenance_response.text
+    maintenance_id = maintenance_response.json()["id"]
+
+    schedule_response = client.post(
+        f"/homes/{home_id}/schedules",
+        json={
+            "title": "Replace furnace filter",
+            "description": "Quarterly filter swap",
+            "frequency": "quarterly",
+            "next_due_date": "2026-08-25",
+            "reminder_enabled": True,
+            "asset_id": asset_id,
+        },
+        headers=headers,
+    )
+    assert schedule_response.status_code == 201, schedule_response.text
+
+    def fake_upload(*, document, public_id):
+        return {
+            "public_id": public_id,
+            "secure_url": f"https://res.cloudinary.com/test/{public_id}",
+            "resource_type": "raw",
+        }
+
+    monkeypatch.setattr(document_service, "upload_document_to_cloudinary", fake_upload)
+
+    upload_response = client.post(
+        f"/homes/{home_id}/maintenance/{maintenance_id}/documents",
+        json={
+            "file_name": "invoice.pdf",
+            "file_type": "application/pdf",
+            "data_url": "data:application/pdf;base64,JVBERi0xLjQK",
+        },
+        headers=headers,
+    )
+    assert upload_response.status_code == 201, upload_response.text
+
+    warranty_response = client.post(
+        f"/homes/{home_id}/warranties",
+        json={
+            "provider": "Lennox",
+            "coverage_details": "Labor and parts",
+            "start_date": "2025-01-01",
+            "expiration_date": "2026-09-10",
+            "asset_id": asset_id,
+            "document_id": upload_response.json()["id"],
+        },
+        headers=headers,
+    )
+    assert warranty_response.status_code == 201, warranty_response.text
+
+    dashboard_response = client.get(f"/dashboard?home_id={home_id}", headers=headers)
+    assert dashboard_response.status_code == 200, dashboard_response.text
+    payload = dashboard_response.json()
+    assert payload["scope_home_id"] == home_id
+    assert payload["home_count"] == 1
+    assert payload["asset_count"] == 1
+    assert payload["maintenance_record_count"] == 1
+    assert payload["schedule_count"] == 1
+    assert payload["warranty_count"] == 1
+    assert payload["due_soon_count"] >= 1
+    assert payload["expiring_soon_count"] >= 1
+    assert payload["upcoming_maintenance"]
+    assert payload["warranty_alerts"]
+    assert payload["recent_activity"]
+    assert payload["home_health"][0]["status_label"] in {"Watch", "Attention", "Healthy"}

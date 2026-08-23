@@ -9,6 +9,7 @@ import { HomesPage } from './pages/HomesPage';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { MaintenancePage } from './pages/MaintenancePage';
+import { DashboardPage } from './pages/DashboardPage';
 import { WarrantiesPage } from './pages/WarrantiesPage';
 import { SchedulesPage } from './pages/SchedulesPage';
 import { SpendingPage } from './pages/SpendingPage';
@@ -49,7 +50,8 @@ export function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="homes" replace />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="homes" element={<HomesPage />} />
         <Route path="schedules" element={<SchedulesPage />} />
         <Route path="spending" element={<SpendingPage />} />
