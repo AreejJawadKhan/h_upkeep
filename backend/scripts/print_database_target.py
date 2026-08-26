@@ -21,7 +21,7 @@ def main() -> None:
     print(f"host={url.host or ''}")
     print(f"port={url.port or ''}")
     print(f"database={url.database or ''}")
-    print(f"has_password={'yes' if url.password else 'no'}")
+    print("password=redacted" if url.password else "password=missing")
     print(f"raw_scheme={url.get_backend_name()}")
 
 
