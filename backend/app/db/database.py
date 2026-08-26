@@ -4,7 +4,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from app.core.config import settings
 from app.core.database_url import normalize_database_url
 
-database_url = normalize_database_url(settings.DATABASE_URL)
+database_url = normalize_database_url(settings.get_database_url())
 
 engine_kwargs = {}
 if database_url.get_backend_name() == "sqlite":

@@ -75,6 +75,30 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    def get_database_url(self) -> str:
+        """
+        Return the effective database URL.
+
+        Prefer an explicit DATABASE_URL when one is provided. Fall back to
+        Railway-style split Postgres variables only when no explicit URL is set.
+        """
+        fields_set = getattr(self, "__pydantic_fields_set__", set())
+        if "DATABASE_URL" in fields_set and self.DATABASE_URL:
+            return self.DATABASE_URL
+
+        if self.PGHOST and self.PGUSER and self.PGDATABASE and self.PGPASSWORD:
+            return str(
+                build_postgres_url(
+                    host=self.PGHOST,
+                    port=self.PGPORT,
+                    user=self.PGUSER,
+                    password=self.PGPASSWORD,
+                    database=self.PGDATABASE,
+                )
+            )
+
+        return self.DATABASE_URL
+
     @property
     def is_production(self) -> bool:
         return self.APP_ENV == "production"
@@ -108,23 +132,12 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_settings(self) -> "Settings":
-        if self.PGHOST and self.PGUSER and self.PGDATABASE and self.PGPASSWORD:
-            self.DATABASE_URL = str(
-                build_postgres_url(
-                    host=self.PGHOST,
-                    port=self.PGPORT,
-                    user=self.PGUSER,
-                    password=self.PGPASSWORD,
-                    database=self.PGDATABASE,
-                )
-            )
-
         if not self.is_production:
             return self
 
         errors: list[str] = []
 
-        if self.DATABASE_URL.startswith("sqlite:"):
+        if self.get_database_url().startswith("sqlite:"):
             errors.append("DATABASE_URL must point to PostgreSQL in production")
 
         if self.JWT_SECRET in {"", "set-via-env"}:

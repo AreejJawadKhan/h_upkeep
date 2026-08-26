@@ -43,7 +43,7 @@ from app.api.warranty import router as warranty_router
 # Schema / table creation
 # ---------------------------------------------------------------------------
 
-if settings.AUTO_CREATE_TABLES and make_url(settings.DATABASE_URL).get_backend_name() == "sqlite":
+if settings.AUTO_CREATE_TABLES and make_url(settings.get_database_url()).get_backend_name() == "sqlite":
     Base.metadata.create_all(bind=engine)
 
 # ---------------------------------------------------------------------------

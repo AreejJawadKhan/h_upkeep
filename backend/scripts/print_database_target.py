@@ -12,7 +12,7 @@ from app.core.database_url import normalize_database_url
 
 
 def main() -> None:
-    url = normalize_database_url(settings.DATABASE_URL)
+    url = normalize_database_url(settings.get_database_url())
 
     print("DATABASE TARGET DIAGNOSTIC")
     print(f"APP_ENV={settings.APP_ENV}")
