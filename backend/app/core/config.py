@@ -4,6 +4,8 @@ from typing import List, Literal
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.core.database_url import build_postgres_url
+
 
 class Settings(BaseSettings):
     # --- Runtime mode ---
@@ -12,6 +14,11 @@ class Settings(BaseSettings):
     # --- Database ---
     DATABASE_URL: str = "sqlite:///./home_repair_log.db"
     AUTO_CREATE_TABLES: bool = True
+    PGHOST: str = ""
+    PGPORT: str = ""
+    PGUSER: str = ""
+    PGPASSWORD: str = ""
+    PGDATABASE: str = ""
 
     # --- JWT access tokens ---
     JWT_SECRET: str = "set-via-env"
@@ -101,6 +108,17 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_settings(self) -> "Settings":
+        if self.PGHOST and self.PGUSER and self.PGDATABASE and self.PGPASSWORD:
+            self.DATABASE_URL = str(
+                build_postgres_url(
+                    host=self.PGHOST,
+                    port=self.PGPORT,
+                    user=self.PGUSER,
+                    password=self.PGPASSWORD,
+                    database=self.PGDATABASE,
+                )
+            )
+
         if not self.is_production:
             return self
 

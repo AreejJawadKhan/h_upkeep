@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy.engine.url import URL, make_url
 
 
@@ -18,3 +20,21 @@ def normalize_database_url(raw_url: str) -> URL:
         return url.set(drivername="postgresql+psycopg")
 
     return url
+
+
+def build_postgres_url(
+    *,
+    host: str,
+    port: str | int | None,
+    user: str,
+    password: str,
+    database: str,
+) -> URL:
+    return URL.create(
+        drivername="postgresql+psycopg",
+        username=user,
+        password=password,
+        host=host,
+        port=int(port) if port not in {None, ""} else None,
+        database=database,
+    )
