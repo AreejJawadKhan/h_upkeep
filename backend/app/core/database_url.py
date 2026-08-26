@@ -17,7 +17,12 @@ def normalize_database_url(raw_url: str) -> URL:
     url = make_url(raw_url)
 
     if url.get_backend_name() == "postgresql" and url.drivername == "postgresql":
-        return url.set(drivername="postgresql+psycopg")
+        url = url.set(drivername="postgresql+psycopg")
+
+    if url.get_backend_name() == "postgresql":
+        query = dict(url.query)
+        query.pop("channel_binding", None)
+        url = url.set(query=query)
 
     return url
 
