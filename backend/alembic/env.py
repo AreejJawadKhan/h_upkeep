@@ -37,7 +37,7 @@ target_metadata = Base.metadata
 def _configure_context(connection=None) -> None:
     context.configure(
         connection=connection,
-        url=str(normalize_database_url(settings.get_database_url())) if connection is None else None,
+        url=normalize_database_url(settings.get_database_url()) if connection is None else None,
         target_metadata=target_metadata,
         compare_type=True,
         render_as_batch=(connection is not None and connection.dialect.name == "sqlite"),
@@ -52,7 +52,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     connectable = create_engine(
-        str(normalize_database_url(settings.get_database_url())),
+        normalize_database_url(settings.get_database_url()),
         poolclass=pool.NullPool,
     )
 

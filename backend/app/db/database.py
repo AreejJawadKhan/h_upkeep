@@ -17,7 +17,7 @@ else:
     engine_kwargs["max_overflow"] = 10
 
 engine = create_engine(
-    str(database_url),
+    database_url,
     **engine_kwargs,
 )
 
