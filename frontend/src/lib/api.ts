@@ -1,8 +1,13 @@
 import type { ApiErrorShape } from './types';
 
+const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+
+if (!rawApiUrl && !import.meta.env.DEV) {
+  throw new Error('VITE_API_URL must be set in production');
+}
+
 export const API_BASE =
-  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ??
-  'http://localhost:8000';
+  rawApiUrl?.replace(/\/$/, '') ?? 'http://localhost:8000';
 
 export class ApiError extends Error {
   status: number;
@@ -85,6 +90,3 @@ export async function apiRequestWithRefresh<T>(
     throw error;
   }
 }
-
-console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
-console.log('API_BASE:', API_BASE);
