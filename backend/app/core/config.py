@@ -49,14 +49,15 @@ class Settings(BaseSettings):
 
     # --- Email ---
     # True (default) → print emails to console instead of sending via SMTP.
-    # Set to False and configure SMTP settings for real email delivery.
+    # Set to False and configure RESEND_API_KEY for real email delivery.
     MAIL_CONSOLE_MODE: bool = True
+    RESEND_API_KEY: str = ""
     MAIL_SERVER: str = "smtp.gmail.com"
     MAIL_PORT: int = 587
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
-    MAIL_FROM: str = "noreply@homerepairlog.com"
-    MAIL_FROM_NAME: str = "HomeRepair Log"
+    MAIL_FROM: str = "noreply@areejjkhan.tech"
+    MAIL_FROM_NAME: str = "Hupkeep"
 
     # --- Google OAuth 2.0 / OIDC ---
     # Leave empty to disable Google sign-in (endpoints return 503).
@@ -151,6 +152,8 @@ class Settings(BaseSettings):
 
         if self.MAIL_CONSOLE_MODE:
             errors.append("MAIL_CONSOLE_MODE must be false in production")
+        if not self.RESEND_API_KEY:
+            errors.append("RESEND_API_KEY must be set in production")
 
         if any(origin == "*" for origin in self.CORS_ORIGINS):
             errors.append("CORS_ORIGINS must not include wildcard origins in production")

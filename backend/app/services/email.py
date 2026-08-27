@@ -7,19 +7,16 @@ Development mode (MAIL_CONSOLE_MODE=True, the default):
     reset links during local development without any SMTP configuration.
 
 Production mode (MAIL_CONSOLE_MODE=False):
-    Emails are sent via SMTP using the MAIL_* settings from .env.
-    For Gmail, use an App Password (not your account password).
-    The SMTP connection uses STARTTLS on port 587 by default.
+    Emails are sent through the Resend HTTP API using RESEND_API_KEY.
 
 The functions in this module are async so they can be awaited directly from
 async FastAPI route handlers without blocking the event loop.
 """
 
-import asyncio
 import logging
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import re
+
+import resend
 
 from app.core.config import settings
 
@@ -29,29 +26,8 @@ logger = logging.getLogger(__name__)
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _build_message(to: str, subject: str, html_body: str) -> MIMEMultipart:
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"{settings.MAIL_FROM_NAME} <{settings.MAIL_FROM}>"
-    msg["To"] = to
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-    return msg
-
-
-def _smtp_send(to: str, subject: str, html_body: str) -> None:
-    """Blocking SMTP send — called in a thread-pool executor."""
-    msg = _build_message(to, subject, html_body)
-    with smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-        server.sendmail(settings.MAIL_FROM, to, msg.as_string())
-
-
 async def _deliver(to: str, subject: str, html_body: str) -> None:
     if settings.MAIL_CONSOLE_MODE:
-        # Strip HTML tags for a readable console representation.
-        import re
         plain = re.sub(r"<[^>]+>", " ", html_body)
         plain = re.sub(r"\s+", " ", plain).strip()
         logger.info(
@@ -64,8 +40,25 @@ async def _deliver(to: str, subject: str, html_body: str) -> None:
         )
         return
 
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, _smtp_send, to, subject, html_body)
+    if not settings.RESEND_API_KEY:
+        raise RuntimeError(
+            "RESEND_API_KEY must be configured when MAIL_CONSOLE_MODE is false"
+        )
+
+    resend.api_key = settings.RESEND_API_KEY
+
+    params: resend.Emails.SendParams = {
+        "from": f"{settings.MAIL_FROM_NAME} <{settings.MAIL_FROM}>",
+        "to": [to],
+        "subject": subject,
+        "html": html_body,
+    }
+
+    try:
+        await resend.Emails.send_async(params)
+    except Exception:
+        logger.exception("Failed to send email via Resend to %s", to)
+        raise
 
 
 # ---------------------------------------------------------------------------
