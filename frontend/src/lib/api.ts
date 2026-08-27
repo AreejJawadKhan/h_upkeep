@@ -1,13 +1,11 @@
 import type { ApiErrorShape } from './types';
 
 const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const DEFAULT_PROD_API_BASE = 'https://api.hupkeep.areejjkhan.tech';
 
-if (!rawApiUrl && !import.meta.env.DEV) {
-  throw new Error('VITE_API_URL must be set in production');
-}
-
-export const API_BASE =
-  rawApiUrl?.replace(/\/$/, '') ?? 'http://localhost:8000';
+export const API_BASE = rawApiUrl?.replace(/\/$/, '') ?? (
+  import.meta.env.DEV ? 'http://localhost:8000' : DEFAULT_PROD_API_BASE
+);
 
 export class ApiError extends Error {
   status: number;
