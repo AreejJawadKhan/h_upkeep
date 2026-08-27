@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 export function AuthShell({
   eyebrow,
@@ -33,9 +34,14 @@ export function AuthShell({
 
       <section className="auth-card">
         {children}
-        {footer ? <div className="auth-footer">{footer}</div> : null}
+        <div className="auth-footer">
+          {footer ? <div className="auth-footer-main">{footer}</div> : null}
+          <div className="legal-links auth-legal-links">
+            <Link to="/terms">Terms of Service</Link>
+            <Link to="/privacy">Privacy Policy</Link>
+          </div>
+        </div>
       </section>
     </main>
   );
 }
-

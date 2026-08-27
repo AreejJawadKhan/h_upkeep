@@ -103,9 +103,12 @@ export function LandingPage() {
 
       <footer className="landing-footer">
         <span>Built as a real product, not a mock dashboard.</span>
-        <Link to="/login">Already have an account?</Link>
+        <div className="legal-links">
+          <Link to="/terms">Terms of Service</Link>
+          <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/login">Already have an account?</Link>
+        </div>
       </footer>
     </main>
   );
 }
-

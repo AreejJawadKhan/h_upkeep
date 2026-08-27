@@ -10,12 +10,14 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { DashboardPage } from './pages/DashboardPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 import { WarrantiesPage } from './pages/WarrantiesPage';
 import { SchedulesPage } from './pages/SchedulesPage';
 import { SpendingPage } from './pages/SpendingPage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { TermsPage } from './pages/TermsPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -40,6 +42,8 @@ export function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/auth/error" element={<AuthErrorPage />} />
       <Route

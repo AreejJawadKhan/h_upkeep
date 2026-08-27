@@ -356,6 +356,37 @@ p {
   padding-bottom: 0.5rem;
 }
 
+.legal-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  font-weight: 700;
+  color: var(--accent-3);
+}
+
+.legal-links a {
+  color: inherit;
+}
+
+.legal-shell .legal-panel {
+  width: min(100%, 920px);
+  margin: 0 auto;
+}
+
+.legal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 72ch;
+}
+
+.legal-content h3 {
+  margin-top: 0.4rem;
+  font-size: 1.1rem;
+}
+
 .auth-shell {
   min-height: 100vh;
   display: grid;
@@ -454,8 +485,23 @@ p {
 }
 
 .auth-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   padding-top: 0.4rem;
   color: var(--muted);
+}
+
+.auth-footer-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.auth-legal-links {
+  justify-content: flex-start;
+  gap: 0.85rem;
+  font-size: 0.9rem;
 }
 
 .field {
