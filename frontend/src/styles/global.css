@@ -1644,7 +1644,6 @@ p {
 @media (max-width: 1180px) {
   .landing-grid,
   .auth-shell,
-  .app-shell,
   .workspace-grid,
   .split-panels {
     grid-template-columns: 1fr;
@@ -1686,6 +1685,10 @@ p {
 }
 
 @media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
   .landing-topbar,
   .landing-footer,
   .hero-actions,
