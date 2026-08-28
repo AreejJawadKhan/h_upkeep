@@ -1,13 +1,21 @@
 import type { CurrencyCode } from '../context/PreferencesContext';
 
+function parseDateValue(value: string | null | undefined) {
+  if (!value) return null;
+
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function formatDate(value: string | null | undefined) {
-  if (!value) return '—';
+  const date = parseDateValue(value);
+  if (!date) return '—';
   return new Intl.DateTimeFormat('en', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
     timeZone: 'UTC',
-  }).format(new Date(`${value}T00:00:00Z`));
+  }).format(date);
 }
 
 export function initials(name: string) {
