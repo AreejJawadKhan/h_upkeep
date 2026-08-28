@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 240" fill="none" role="img" aria-label="Hupkeep logo">
+  <g transform="translate(24 24)">
+    <path d="M40 92L128 18L216 92" stroke="#C2D378" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M74 92V188H106V114" fill="#171817" />
+    <path d="M150 92V188H182V114" fill="#171817" />
+    <rect x="112" y="106" width="14" height="14" rx="2.5" fill="#C2D378" />
+    <rect x="130" y="106" width="14" height="14" rx="2.5" fill="#C2D378" />
+    <rect x="112" y="124" width="14" height="14" rx="2.5" fill="#C2D378" />
+    <rect x="130" y="124" width="14" height="14" rx="2.5" fill="#C2D378" />
+    <rect x="184" y="30" width="18" height="34" rx="4" fill="#171817" />
+  </g>
+  <text x="270" y="125" fill="#171817" font-family="Manrope, Arial, sans-serif" font-size="72" font-weight="800" letter-spacing="-1.5">
+    Hupkeep
+  </text>
+  <text x="275" y="168" fill="#7E8271" font-family="Manrope, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="7">
+    YOUR HOME, IN ORDER
+  </text>
+</svg>

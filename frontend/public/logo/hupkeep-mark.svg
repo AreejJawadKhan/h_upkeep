@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" role="img" aria-label="Hupkeep mark">
+  <path d="M40 118L128 44L216 118" stroke="#C2D378" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M74 118V214H106V140" fill="#171817" />
+  <path d="M150 118V214H182V140" fill="#171817" />
+  <rect x="112" y="132" width="14" height="14" rx="2.5" fill="#C2D378" />
+  <rect x="130" y="132" width="14" height="14" rx="2.5" fill="#C2D378" />
+  <rect x="112" y="150" width="14" height="14" rx="2.5" fill="#C2D378" />
+  <rect x="130" y="150" width="14" height="14" rx="2.5" fill="#C2D378" />
+  <rect x="184" y="56" width="18" height="34" rx="4" fill="#171817" />
+</svg>

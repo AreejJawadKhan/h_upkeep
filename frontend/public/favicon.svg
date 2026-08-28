@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Hupkeep favicon">
+  <rect width="64" height="64" rx="18" fill="#FCFCF8" />
+  <path d="M12 31L32 14L52 31" stroke="#C2D378" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M20 31V54H28V37" fill="#171817" />
+  <path d="M36 31V54H44V37" fill="#171817" />
+  <rect x="28" y="35" width="4.5" height="4.5" rx="1.2" fill="#C2D378" />
+  <rect x="34.5" y="35" width="4.5" height="4.5" rx="1.2" fill="#C2D378" />
+  <rect x="28" y="41.5" width="4.5" height="4.5" rx="1.2" fill="#C2D378" />
+  <rect x="34.5" y="41.5" width="4.5" height="4.5" rx="1.2" fill="#C2D378" />
+  <rect x="46" y="18" width="4" height="7" rx="1" fill="#171817" />
+</svg>
