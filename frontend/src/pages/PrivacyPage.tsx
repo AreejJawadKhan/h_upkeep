@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Panel } from '../components/UI';
 
+const LAST_UPDATED = 'August 28, 2026';
+
 export function PrivacyPage() {
   return (
     <main className="landing-shell legal-shell">
@@ -8,8 +10,8 @@ export function PrivacyPage() {
         <div className="brand-lockup">
           <div className="brand-mark">HR</div>
           <div>
-            <p className="eyebrow">HomeRepair Log</p>
-            <h1>Field Journal</h1>
+            <p className="eyebrow">H Upkeep</p>
+            <h1>Home maintenance, organized</h1>
           </div>
         </div>
         <div className="landing-actions">
@@ -24,43 +26,109 @@ export function PrivacyPage() {
 
       <Panel title="Privacy Policy" eyebrow="Legal" className="legal-panel">
         <div className="legal-content">
-          <p>Effective date: August 27, 2026</p>
+          <p>Last updated: {LAST_UPDATED}</p>
           <p>
-            HomeRepair Log collects the information needed to provide the service, including account details, homes,
-            areas, assets, maintenance entries, documents, and other content you choose to store in the workspace.
+            H Upkeep is a home maintenance workspace that helps people organize homes, repairs, schedules, assets,
+            documents, warranties, and related maintenance history. This Privacy Policy explains what information
+            H Upkeep collects, how it uses that information, and when service providers may process it on our behalf.
           </p>
+
+          <h3>Information we collect</h3>
+          <p>
+            We collect the information you submit to create and use an account, including your name, email address,
+            password-derived authentication data, and account status information such as whether your email has been
+            verified.
+          </p>
+          <p>
+            We also collect the home-maintenance content you choose to store in the product, such as homes, areas,
+            assets, maintenance records, schedules, warranties, reminders, and comments or notes you add while using
+            the workspace.
+          </p>
+          <p>
+            If you upload files or images, we collect those uploads and related metadata needed to store and display
+            them inside H Upkeep.
+          </p>
+          <p>
+            Like most web applications, we also receive technical information such as device and browser data, request
+            logs, IP-related network information, and session data needed to secure the service and keep you signed in.
+          </p>
+
+          <h3>Google Sign-In information</h3>
+          <p>
+            If you choose to sign in with Google, H Upkeep currently requests the <code>openid</code>, <code>email</code>,
+            and <code>profile</code> scopes. We use that access to identify your Google account, confirm your email
+            address, and create or sign you into a H Upkeep account.
+          </p>
+          <p>
+            From Google, H Upkeep receives the information returned by those scopes, which currently includes your
+            Google subject identifier, email address, and basic profile details such as your display name. We do not
+            request access to Gmail, Google Drive, Google Calendar, contacts, or other Google services.
+          </p>
+          <p>
+            Google account information is used only to authenticate you and maintain your H Upkeep account. When a
+            Google sign-in creates or links an account, H Upkeep stores the Google subject identifier in its
+            authentication records so the same Google identity can be recognized on later sign-ins.
+          </p>
+
           <h3>How we use information</h3>
           <p>
-            We use your information to operate the service, authenticate you, send verification and password reset
-            emails, display your workspace, and improve the product.
+            We use the information we collect to provide H Upkeep features, create and manage accounts, verify email
+            addresses, send verification and password-reset emails, display your maintenance workspace, protect the
+            platform from abuse, and improve the product over time.
           </p>
-          <h3>Email delivery</h3>
+
+          <h3>Session and authentication</h3>
           <p>
-            Verification and reset emails may be sent through a third-party delivery provider such as Resend.
+            H Upkeep uses signed access tokens and secure refresh-session cookies to keep you authenticated. The
+            refresh cookie is HttpOnly, and we use it only to maintain your session and rotate access credentials.
+            We also use a signed session value for the Google OAuth state check so the sign-in flow can be protected
+            against cross-site request forgery.
           </p>
-          <h3>Sharing</h3>
+
+          <h3>Service providers</h3>
           <p>
-            We do not sell your personal information. We may share data with service providers that help run the
-            product, such as hosting, email delivery, and analytics tooling where enabled.
+            H Upkeep runs on third-party infrastructure and services that may process information on our behalf. These
+            providers currently include hosting and deployment platforms such as Railway and Vercel, database hosting
+            such as Neon or Railway Postgres, email delivery such as Resend, and file storage or delivery such as
+            Cloudinary. Google also processes information when you use Google Sign-In.
           </p>
+          <p>
+            These providers process the information necessary to run the service, deliver emails, store files, host the
+            application, and authenticate sign-in flows. We do not sell your personal information.
+          </p>
+
+          <h3>Data retention</h3>
+          <p>
+            We keep account and maintenance data for as long as it is needed to provide H Upkeep, maintain your account,
+            resolve issues, and support the features you choose to use. We do not publish a fixed retention period here
+            because retention can vary based on the type of data and whether the information is still needed for the
+            service.
+          </p>
+
           <h3>Security</h3>
           <p>
-            We use reasonable technical and organizational measures to protect your data, but no internet service can
-            guarantee absolute security.
+            We use reasonable technical and organizational safeguards designed to protect your information, including
+            secure session handling, authentication checks, and restricted access controls. No online service can
+            guarantee absolute security, and we cannot promise that information will never be compromised.
           </p>
-          <h3>Contact</h3>
+
+          <h3>Your choices</h3>
           <p>
-            Questions about privacy can be sent to{' '}
-            <a href="mailto:support@areejjkhan.tech">support@areejjkhan.tech</a>.
+            You can update account information through the product where those features are available. If you need help
+            with access, deletion, or privacy concerns, contact us using the details below.
           </p>
-          <p className="muted-copy">
-            This page is a product-facing summary and should be reviewed by counsel before formal publication.
+
+          <h3>Changes to this policy</h3>
+          <p>
+            We may update this Privacy Policy from time to time as H Upkeep changes or as our legal and operational
+            needs change. The updated version will be posted on this page with a new last-updated date.
           </p>
+
         </div>
       </Panel>
 
       <footer className="landing-footer">
-        <span>HomeRepair Log</span>
+        <span>H Upkeep</span>
         <div className="legal-links">
           <Link to="/terms">Terms of Service</Link>
           <Link to="/login">Sign in</Link>

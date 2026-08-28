@@ -682,6 +682,7 @@ def test_warranties_and_home_documents_smoke(app_client, monkeypatch):
 def test_dashboard_overview_includes_health_spend_and_alerts(app_client, monkeypatch):
     client, SessionLocal, state, token = _bootstrap_logged_in_user(app_client, "dashboard@example.com")
     headers = {"Authorization": f"Bearer {token}"}
+    due_soon_date = (utc_now().date() + timedelta(days=7)).isoformat()
 
     home_response = client.post(
         "/homes",
@@ -725,7 +726,7 @@ def test_dashboard_overview_includes_health_spend_and_alerts(app_client, monkeyp
             "date": "2026-08-15",
             "cost": 120.0,
             "service_provider": "HeatCo",
-            "next_due_date": "2026-08-25",
+            "next_due_date": due_soon_date,
             "image_url": None,
             "asset_id": asset_id,
         },
@@ -740,7 +741,7 @@ def test_dashboard_overview_includes_health_spend_and_alerts(app_client, monkeyp
             "title": "Replace furnace filter",
             "description": "Quarterly filter swap",
             "frequency": "quarterly",
-            "next_due_date": "2026-08-25",
+            "next_due_date": due_soon_date,
             "reminder_enabled": True,
             "asset_id": asset_id,
         },

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Panel } from '../components/UI';
 
+const LAST_UPDATED = 'August 28, 2026';
+
 export function TermsPage() {
   return (
     <main className="landing-shell legal-shell">
@@ -8,8 +10,8 @@ export function TermsPage() {
         <div className="brand-lockup">
           <div className="brand-mark">HR</div>
           <div>
-            <p className="eyebrow">HomeRepair Log</p>
-            <h1>Field Journal</h1>
+            <p className="eyebrow">H Upkeep</p>
+            <h1>Home maintenance, organized</h1>
           </div>
         </div>
         <div className="landing-actions">
@@ -24,40 +26,87 @@ export function TermsPage() {
 
       <Panel title="Terms of Service" eyebrow="Legal" className="legal-panel">
         <div className="legal-content">
-          <p>Effective date: August 27, 2026</p>
+          <p>Last updated: {LAST_UPDATED}</p>
           <p>
-            HomeRepair Log is a home maintenance workspace for tracking homes, areas, assets, repairs, reminders,
-            documents, and warranties. By using the service, you agree to use it only for lawful purposes and to
-            provide accurate information where required.
+            These Terms of Service apply to H Upkeep, a home-maintenance workspace that helps users organize homes,
+            repairs, maintenance history, schedules, assets, warranties, documents, reminders, and related
+            information. By using H Upkeep, you agree to these terms.
           </p>
-          <h3>Account responsibility</h3>
+
+          <h3>Your account</h3>
           <p>
-            You are responsible for keeping your account credentials secure and for all activity that occurs under
-            your account.
+            You are responsible for the information you provide, for keeping your account credentials secure, and for
+            all activity that happens through your account. If you use Google Sign-In, you are responsible for the
+            security of the Google account connected to H Upkeep.
           </p>
+
+          <h3>Your content</h3>
+          <p>
+            You keep ownership of the information and content you submit to H Upkeep. You grant H Upkeep the limited
+            rights needed to host, store, process, display, transmit, back up, and otherwise operate the service so we
+            can provide the features you choose to use.
+          </p>
+          <p>
+            Do not upload content that you do not have the right to use, that is unlawful, or that could harm the
+            service or other users.
+          </p>
+
           <h3>Acceptable use</h3>
+          <p>When using H Upkeep, you agree not to:</p>
+          <ul>
+            <li>misuse the service or attempt unauthorized access;</li>
+            <li>probe, attack, or disrupt the platform or its underlying systems;</li>
+            <li>upload malicious files, scripts, or harmful content;</li>
+            <li>use the service for unlawful activity; or</li>
+            <li>interfere with other users or the operation of the product.</li>
+          </ul>
+
+          <h3>Maintenance and safety disclaimer</h3>
           <p>
-            You agree not to misuse the service, attempt unauthorized access, or interfere with the operation of the
-            platform.
+            H Upkeep is an organizational and informational tool. It does not replace professional advice from
+            contractors, electricians, plumbers, engineers, inspectors, safety professionals, or other qualified
+            experts. You are responsible for your own maintenance decisions, safety choices, and any actions taken
+            based on information in the service.
           </p>
-          <h3>Service changes</h3>
+
+          <h3>Third-party services</h3>
           <p>
-            We may update, change, suspend, or discontinue parts of the service as needed to maintain or improve the
-            product.
+            H Upkeep depends on third-party services to operate, including hosting, deployment, authentication,
+            database storage, file storage, and email delivery. These services may process your information as needed
+            to provide the product, support sign-in, send verification or password reset emails, and store uploaded
+            content.
           </p>
-          <h3>Contact</h3>
+
+          <h3>Service changes and availability</h3>
           <p>
-            If you have questions about these terms, contact us at{' '}
-            <a href="mailto:support@areejjkhan.tech">support@areejjkhan.tech</a>.
+            Features may change over time as H Upkeep evolves. We may suspend, limit, or discontinue parts of the
+            service when necessary. We do not guarantee uninterrupted or error-free availability.
           </p>
-          <p className="muted-copy">
-            This page is a product-facing summary and should be reviewed by counsel before formal publication.
+
+          <h3>Termination or restriction</h3>
+          <p>
+            We may restrict or terminate access to H Upkeep if we believe these terms have been violated, if the
+            service is being abused, or if doing so is necessary to protect the product, users, or infrastructure.
           </p>
+
+          <h3>General limits</h3>
+          <p>
+            The service is provided in a practical, good-faith manner for personal home organization. To the extent
+            allowed by law, H Upkeep is not responsible for indirect, incidental, or consequential losses arising from
+            use of the service.
+          </p>
+
+          <h3>Changes to these terms</h3>
+          <p>
+            We may update these Terms of Service from time to time. The updated version will be posted on this page
+            with a new last-updated date.
+          </p>
+
         </div>
       </Panel>
 
       <footer className="landing-footer">
-        <span>HomeRepair Log</span>
+        <span>H Upkeep</span>
         <div className="legal-links">
           <Link to="/privacy">Privacy Policy</Link>
           <Link to="/login">Sign in</Link>
