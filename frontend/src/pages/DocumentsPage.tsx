@@ -4,6 +4,7 @@ import { Button, EmptyState, Field, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatDate } from '../lib/format';
+import { parseHomeParam } from '../lib/routes';
 import type { Home, MaintenanceDocument, MaintenanceRecord } from '../lib/types';
 
 type UploadForm = {
@@ -45,7 +46,7 @@ export function DocumentsPage() {
   const [status, setStatus] = useState('');
   const [upload, setUpload] = useState<UploadForm>(emptyUpload);
 
-  const selectedHomeId = params.get('home') ?? '';
+  const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedMaintenanceId = params.get('maintenance') ?? '';
 
   const selectedHome = useMemo(

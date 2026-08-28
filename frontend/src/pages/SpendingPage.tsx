@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatCurrency, formatDate } from '../lib/format';
+import { parseHomeParam } from '../lib/routes';
 import type { Home, SpendingOverviewResponse } from '../lib/types';
 
 function pctWidth(value: number, max: number) {
@@ -22,7 +23,7 @@ export function SpendingPage() {
   const [loadingOverview, setLoadingOverview] = useState(true);
   const [error, setError] = useState('');
 
-  const selectedHomeId = params.get('home') ?? '';
+  const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
     () => homes.find((home) => String(home.id) === selectedHomeId) ?? null,
     [homes, selectedHomeId],

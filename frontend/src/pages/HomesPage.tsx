@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { EmptyState, Field, Panel, Button } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
+import { parseHomeParam } from '../lib/routes';
 import type { Area, Asset, Home } from '../lib/types';
 import { formatDate } from '../lib/format';
 
@@ -58,7 +59,7 @@ export function HomesPage() {
   const [error, setError] = useState('');
   const [actionMessage, setActionMessage] = useState('');
 
-  const selectedHomeId = params.get('home') ?? '';
+  const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
     () => homes.find((home) => String(home.id) === selectedHomeId) ?? homes[0] ?? null,
     [homes, selectedHomeId],

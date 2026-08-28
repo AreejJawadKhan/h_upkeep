@@ -4,6 +4,7 @@ import { Button, EmptyState, Field, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatDate } from '../lib/format';
+import { parseHomeParam } from '../lib/routes';
 import type {
   Asset,
   Home,
@@ -58,7 +59,7 @@ export function SchedulesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
 
-  const selectedHomeId = params.get('home') ?? '';
+  const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
     () => homes.find((home) => String(home.id) === selectedHomeId) ?? homes[0] ?? null,
     [homes, selectedHomeId],

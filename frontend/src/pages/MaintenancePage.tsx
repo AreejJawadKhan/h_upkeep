@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatCurrency, formatDate } from '../lib/format';
+import { parseHomeParam } from '../lib/routes';
 import type { Asset, Home, MaintenanceCategory, MaintenanceRecord } from '../lib/types';
 
 const MAINTENANCE_CATEGORIES: MaintenanceCategory[] = [
@@ -60,7 +61,7 @@ export function MaintenancePage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
 
-  const selectedHomeId = params.get('home') ?? '';
+  const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
     () => homes.find((home) => String(home.id) === selectedHomeId) ?? homes[0] ?? null,
     [homes, selectedHomeId],

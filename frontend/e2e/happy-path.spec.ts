@@ -108,7 +108,7 @@ test('login and create a home in the workspace', async ({ page }) => {
   });
 
   await page.goto('/login');
-  await expect(page.getByRole('heading', { name: /sign in to your home workspace/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /sign in to hupkeep/i })).toBeVisible();
 
   await page.getByLabel('Email').fill('owner@example.com');
   await page.getByLabel('Password').fill('StrongPass123!');
@@ -142,4 +142,5 @@ test('login and create a home in the workspace', async ({ page }) => {
   const createdCard = page.locator('.home-list .home-card').filter({ hasText: 'Lake House' });
   await expect(createdCard).toBeVisible();
   await expect(createdCard).toContainText('12 Lake View Drive');
+  await expect(page.getByRole('heading', { name: /lake house/i })).toBeVisible();
 });
