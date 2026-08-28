@@ -102,7 +102,7 @@ export function EmptyState({
   );
 }
 
-export function LoadingState({ label = 'Loading your workspace' }: { label?: string }) {
+export function LoadingState({ label = 'Loading Hupkeep' }: { label?: string }) {
   return (
     <div className="loading-state">
       <div className="spinner" />
@@ -110,4 +110,3 @@ export function LoadingState({ label = 'Loading your workspace' }: { label?: str
     </div>
   );
 }
-

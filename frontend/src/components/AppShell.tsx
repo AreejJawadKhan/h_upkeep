@@ -2,19 +2,17 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Button } from './UI';
 import { initials } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
+import { type CurrencyCode, usePreferences } from '../context/PreferencesContext';
 import { BrandWordmark } from './BrandWordmark';
 
 export function AppShell() {
   const { user, logout } = useAuth();
+  const { currencyCode, currencyOptions, setCurrencyCode } = usePreferences();
 
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <BrandWordmark compact subtitle="Your upkeep workspace" />
-
-        <p className="sidebar-copy">
-          Track what your home needs next, then move from overview to action without losing context.
-        </p>
+        <BrandWordmark compact />
 
         <nav className="sidebar-nav">
           <NavLink to="/app/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -42,6 +40,17 @@ export function AppShell() {
         </nav>
 
         <div className="sidebar-footer">
+          <label className="sidebar-preference">
+            <span className="field-label">Currency</span>
+            <select className="input" value={currencyCode} onChange={(event) => setCurrencyCode(event.target.value as CurrencyCode)}>
+              {currencyOptions.map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
+              ))}
+            </select>
+          </label>
+
           {user ? (
             <div className="user-chip">
               <div className="avatar">{initials(user.name)}</div>
@@ -61,9 +70,9 @@ export function AppShell() {
         <header className="workspace-topbar">
           <div>
             <p className="eyebrow">Overview</p>
-            <h2>Keep the home story in one place</h2>
+            <h2>Everything for the home, in one place</h2>
           </div>
-          <div className="topbar-pill">Hupkeep workspace</div>
+          <div className="topbar-pill">Hupkeep</div>
         </header>
 
         <div className="workspace-body">

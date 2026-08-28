@@ -336,7 +336,7 @@ export function WarrantiesPage() {
             </form>
           </Panel>
 
-          <Panel title="Homes" eyebrow="Switch context">
+          <Panel title="Homes" eyebrow="Choose a home">
             {loading ? (
               <div className="loading-state compact">
                 <div className="spinner" />

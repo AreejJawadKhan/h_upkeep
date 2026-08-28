@@ -3,19 +3,10 @@ import { Button, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { BrandWordmark } from '../components/BrandWordmark';
 
-const featureCards = [
-  {
-    title: 'Homes with context',
-    body: 'Keep the property story, address, and build details visible at a glance.',
-  },
-  {
-    title: 'Areas and assets',
-    body: 'Keep rooms and systems connected without losing the hierarchy.',
-  },
-  {
-    title: 'Safe auth flows',
-    body: 'Verified email, Google sign-in, refresh cookies, and protected sessions.',
-  },
+const previewItems = [
+  { title: 'Add your first home', body: 'Start with one address and build from there.' },
+  { title: 'Keep maintenance on track', body: 'See what needs attention without digging through notes.' },
+  { title: 'Store the important things', body: 'Receipts, manuals, warranties, and photos stay together.' },
 ];
 
 export function LandingPage() {
@@ -28,21 +19,18 @@ export function LandingPage() {
   return (
     <main className="landing-shell">
       <header className="landing-topbar">
-        <BrandWordmark subtitle="Home upkeep, organized" />
+        <BrandWordmark subtitle="Home care, organized" />
         <div className="landing-actions">
           <Button variant="ghost" href="/login">Sign in</Button>
-          <Button variant="primary" href="/register">Create account</Button>
+          <Button variant="primary" href="/register">Get started</Button>
         </div>
       </header>
 
       <section className="landing-grid">
         <div className="hero-copy">
           <div className="hero-tag">Calm upkeep for real homes.</div>
-          <h2>Know what your home needs next, without digging through spreadsheets or scattered notes.</h2>
-          <p>
-            Hupkeep turns the scattered stuff around a house into a clear upkeep history: what was fixed, where it
-            lives, and what comes next.
-          </p>
+          <h2>Everything for your home, organized.</h2>
+          <p>Keep maintenance, appliances, warranties, documents, and expenses in one place.</p>
 
           <div className="hero-actions">
             <Button href="/register">Get started</Button>
@@ -53,46 +41,44 @@ export function LandingPage() {
 
           <div className="hero-metrics">
             <div className="metric-card">
-              <span>Auth</span>
-              <strong>Email verification + refresh cookies</strong>
+              <span>Homes</span>
+              <strong>Keep each place clear and current.</strong>
             </div>
             <div className="metric-card">
-              <span>Structure</span>
-              <strong>Homes, areas, assets</strong>
+              <span>Work</span>
+              <strong>See repairs, schedules, and warranties together.</strong>
             </div>
             <div className="metric-card">
-              <span>Next</span>
-              <strong>Maintenance and scheduling</strong>
+              <span>Files</span>
+              <strong>Store receipts, manuals, and photos safely.</strong>
             </div>
           </div>
         </div>
 
-          <div className="preview-stack">
-          <Panel title="What the system keeps" eyebrow="Workspace preview">
+        <div className="preview-stack">
+          <Panel title="A simple preview" eyebrow="What Hupkeep keeps">
             <div className="preview-list">
-              <div className="preview-item">
-                <strong>Kitchen</strong>
-                <span>Area connected to a refrigerator, disposal, and plumbing notes.</span>
-              </div>
-              <div className="preview-item">
-                <strong>Water heater</strong>
-                <span>Asset card with purchase date, installation date, and lifespan.</span>
-              </div>
-              <div className="preview-item">
-                <strong>Verification flow</strong>
-                <span>Registration sends a verification email before login is enabled.</span>
-              </div>
+              {previewItems.map((item) => (
+                <div className="preview-item" key={item.title}>
+                  <strong>{item.title}</strong>
+                  <span>{item.body}</span>
+                </div>
+              ))}
             </div>
           </Panel>
 
-          <div className="feature-grid">
-            {featureCards.map((feature) => (
-              <article className="feature-card" key={feature.title}>
-                <h3>{feature.title}</h3>
-                <p>{feature.body}</p>
-              </article>
-            ))}
-          </div>
+          <Panel title="Built for day-to-day use" eyebrow="Homeowner focused">
+            <div className="preview-list">
+              <div className="preview-item">
+                <strong>Clear next steps</strong>
+                <span>See what needs attention, what is due, and what can wait.</span>
+              </div>
+              <div className="preview-item">
+                <strong>Quiet, readable layouts</strong>
+                <span>Use the app without heavy visuals getting in the way.</span>
+              </div>
+            </div>
+          </Panel>
         </div>
       </section>
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatCurrency, formatDate } from '../lib/format';
 import type { DashboardOverviewResponse, Home } from '../lib/types';
@@ -13,6 +14,7 @@ function pctWidth(value: number, max: number) {
 
 export function DashboardPage() {
   const { accessToken, refreshSession } = useAuth();
+  const { currencyCode } = usePreferences();
   const [params, setParams] = useSearchParams();
   const [homes, setHomes] = useState<Home[]>([]);
   const [overview, setOverview] = useState<DashboardOverviewResponse | null>(null);
@@ -98,7 +100,7 @@ export function DashboardPage() {
         <div>
           <p className="eyebrow">Dashboard</p>
           <h2>{currentGreeting}</h2>
-          <p className="muted-copy">Here&apos;s what&apos;s happening across your upkeep workspace.</p>
+          <p className="muted-copy">Here&apos;s what needs attention across your homes.</p>
         </div>
 
         <label className="dashboard-scope">
@@ -124,7 +126,7 @@ export function DashboardPage() {
       {error ? <div className="form-error">{error}</div> : null}
 
       {loadingOverview ? (
-        <Panel title="Dashboard" eyebrow="Phase 3">
+        <Panel title="Dashboard" eyebrow="Overview">
           <div className="loading-state">
             <div className="spinner" />
             <p>Loading dashboard...</p>
@@ -250,11 +252,11 @@ export function DashboardPage() {
                 <div className="dashboard-spending-summary">
                   <div className="hero-metric">
                     <span>Total spend</span>
-                    <strong>{formatCurrency(overview.spending.total_spend)}</strong>
+                    <strong>{formatCurrency(overview.spending.total_spend, currencyCode)}</strong>
                   </div>
                   <div className="hero-metric">
                     <span>Average record</span>
-                    <strong>{formatCurrency(overview.spending.average_cost)}</strong>
+                    <strong>{formatCurrency(overview.spending.average_cost, currencyCode)}</strong>
                   </div>
                   <div className="hero-metric">
                     <span>Records</span>
@@ -264,7 +266,7 @@ export function DashboardPage() {
 
                 <div className="dashboard-trend-panel">
                   <h3>Monthly trend</h3>
-                  <div className="dashboard-trend-list">
+                  <div className="dashboard-trend-list dashboard-trend-scroll">
                     {overview.spending.monthly_trend.map((entry) => (
                       <div className="trend-row" key={entry.label}>
                         <div className="trend-labels">
@@ -274,7 +276,7 @@ export function DashboardPage() {
                         <div className="trend-track">
                           <div className="trend-fill" style={{ width: `${pctWidth(entry.total_spend, trendMax)}%` }} />
                         </div>
-                        <strong className="trend-value">{formatCurrency(entry.total_spend)}</strong>
+                        <strong className="trend-value">{formatCurrency(entry.total_spend, currencyCode)}</strong>
                       </div>
                     ))}
                   </div>
@@ -286,10 +288,10 @@ export function DashboardPage() {
               {overview.warranty_alerts.length === 0 ? (
                 <EmptyState
                   title="No warranty alerts"
-                  description="Expiring or expired coverage will appear here as expiration dates approach."
+                  description="Expiring coverage will appear here as expiration dates approach."
                 />
               ) : (
-                <div className="item-list">
+                <div className="item-list dashboard-alert-list">
                   {overview.warranty_alerts.map((item) => (
                     <article className="item-card dashboard-alert-card" key={`${item.source_id}-${item.status}`}>
                       <div>
@@ -315,7 +317,7 @@ export function DashboardPage() {
       ) : (
         <EmptyState
           title="No dashboard data yet"
-          description="Create homes, records, schedules, documents, and warranties to populate the command center."
+          description="Add homes, maintenance, schedules, documents, and warranties to populate the dashboard."
         />
       )}
     </div>

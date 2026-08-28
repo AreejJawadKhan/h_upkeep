@@ -63,8 +63,8 @@ export function VerifyEmailPage() {
   return (
     <AuthShell
       eyebrow="Email verification"
-      title="Confirm your address"
-      description="Paste the verification token here if you opened the email outside the browser, or resend a new link."
+      title="Confirm your email"
+      description="Paste the token from your email, or ask for a fresh link."
       footer={
         <p>
           <Link to="/login">Back to sign in</Link>
@@ -96,4 +96,3 @@ export function VerifyEmailPage() {
     </AuthShell>
   );
 }
-

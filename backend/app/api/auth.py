@@ -445,7 +445,7 @@ async def google_callback(
     1. Validate CSRF state.
     2. Exchange authorization code for tokens with Google.
     3. Fetch user identity from Google's userinfo endpoint.
-    4. Find or create a HomeRepair Log User + AuthIdentity.
+    4. Find or create a Hupkeep User + AuthIdentity.
     5. Issue our own short-lived access token + long-lived refresh cookie.
     6. Redirect to the frontend callback page with the access token in the
        URL fragment (fragments are not sent in HTTP requests or server logs).
@@ -520,7 +520,7 @@ async def google_callback(
             status_code=status.HTTP_302_FOUND,
         )
 
-    # --- Find or create HomeRepair Log user ---
+    # --- Find or create Hupkeep user ---
     try:
         user = get_or_create_google_user(db, google_sub, email, name)
     except GoogleEmailConflictError:
@@ -532,7 +532,7 @@ async def google_callback(
             status_code=status.HTTP_302_FOUND,
         )
 
-    # --- Issue HomeRepair Log tokens ---
+    # --- Issue Hupkeep tokens ---
     access_token = create_access_token(user.id)
     raw_refresh = create_refresh_token_record(db, user.id)
 

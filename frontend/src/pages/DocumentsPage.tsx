@@ -259,7 +259,7 @@ export function DocumentsPage() {
 
       <div className="workspace-grid">
         <aside className="workspace-sidebar">
-          <Panel title="Upload document" eyebrow="Cloudinary storage">
+          <Panel title="Upload document" eyebrow="Files">
             <form className="stacked-form" onSubmit={submit}>
               <Field
                 label="File"
@@ -289,7 +289,7 @@ export function DocumentsPage() {
             </form>
           </Panel>
 
-          <Panel title="Homes" eyebrow="Switch context">
+          <Panel title="Homes" eyebrow="Choose a home">
             {loadingHomes ? (
               <div className="loading-state compact">
                 <div className="spinner" />

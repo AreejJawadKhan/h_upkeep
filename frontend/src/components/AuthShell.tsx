@@ -23,12 +23,12 @@ export function AuthShell({
         <p className="auth-story-copy">{description}</p>
         <div className="auth-story-notes">
           <div className="note-card">
-            <span className="note-label">Track</span>
-            <strong>homes, systems, receipts, and warranties</strong>
+            <span className="note-label">Keep track of</span>
+            <strong>homes, repairs, receipts, and warranties</strong>
           </div>
           <div className="note-card">
-            <span className="note-label">Designed for</span>
-            <strong>a warm, usable maintenance dashboard</strong>
+            <span className="note-label">Made for</span>
+            <strong>a calm home-maintenance routine</strong>
           </div>
         </div>
       </section>

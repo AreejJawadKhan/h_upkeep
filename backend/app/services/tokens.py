@@ -1,5 +1,5 @@
 """
-Token lifecycle management for HomeRepair Log.
+Token lifecycle management for Hupkeep.
 
 This module handles the creation, validation, and revocation of all opaque
 tokens: email verification, password reset, and refresh tokens.

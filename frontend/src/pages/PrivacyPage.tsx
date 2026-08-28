@@ -23,7 +23,7 @@ export function PrivacyPage() {
         <div className="legal-content">
           <p>Last updated: {LAST_UPDATED}</p>
           <p>
-            Hupkeep is a home maintenance workspace that helps people organize homes, repairs, schedules, assets,
+            Hupkeep is a home maintenance app that helps people organize homes, repairs, schedules, assets,
             documents, warranties, and related maintenance history. This Privacy Policy explains what information
             Hupkeep collects, how it uses that information, and when service providers may process it on our behalf.
           </p>
@@ -37,7 +37,7 @@ export function PrivacyPage() {
           <p>
             We also collect the home-maintenance content you choose to store in the product, such as homes, areas,
             assets, maintenance records, schedules, warranties, reminders, and comments or notes you add while using
-            the workspace.
+            the app.
           </p>
           <p>
             If you upload files or images, we collect those uploads and related metadata needed to store and display
@@ -68,16 +68,16 @@ export function PrivacyPage() {
           <h3>How we use information</h3>
           <p>
             We use the information we collect to provide Hupkeep features, create and manage accounts, verify email
-            addresses, send verification and password-reset emails, display your maintenance workspace, protect the
+            addresses, send verification and password-reset emails, display your home information, protect the
             platform from abuse, and improve the product over time.
           </p>
 
           <h3>Session and authentication</h3>
           <p>
-            Hupkeep uses signed access tokens and secure refresh-session cookies to keep you authenticated. The
-            refresh cookie is HttpOnly, and we use it only to maintain your session and rotate access credentials.
-            We also use a signed session value for the Google OAuth state check so the sign-in flow can be protected
-            against cross-site request forgery.
+            Hupkeep uses signed access tokens and secure session cookies to keep you signed in. The session cookie is
+            HttpOnly, and we use it only to maintain your sign-in and rotate access credentials. We also use a signed
+            session value for the Google OAuth state check so the sign-in flow can be protected against cross-site
+            request forgery.
           </p>
 
           <h3>Service providers</h3>

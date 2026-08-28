@@ -731,11 +731,13 @@ p {
   align-items: center;
   padding: 0.9rem;
   border-radius: 14px;
+  min-width: 0;
 }
 
 .avatar {
   width: 2.7rem;
-  height: 2.7rem;
+  aspect-ratio: 1;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -744,10 +746,24 @@ p {
   font-weight: 800;
 }
 
+.user-chip strong {
+  display: block;
+  font-size: 0.96rem;
+  line-height: 1.1;
+}
+
 .user-chip span {
   display: block;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   color: var(--muted);
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.sidebar-preference {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .app-workspace {
@@ -1476,6 +1492,13 @@ p {
   gap: 0.85rem;
 }
 
+.dashboard-trend-scroll,
+.dashboard-alert-list {
+  max-height: 22rem;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
 .scope-stack {
   display: flex;
   flex-direction: column;
@@ -1488,6 +1511,12 @@ p {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+}
+
+.trend-scroll {
+  max-height: 21rem;
+  overflow: auto;
+  padding-right: 0.2rem;
 }
 
 .trend-row,

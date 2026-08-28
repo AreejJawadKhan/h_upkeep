@@ -72,7 +72,7 @@ export function HomesPage() {
   const [assetEditId, setAssetEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
-  async function loadHomes() {
+  async function loadHomes(preferredHomeId?: number) {
     setLoading(true);
     setError('');
     try {
@@ -83,7 +83,13 @@ export function HomesPage() {
         refreshSession,
       );
       setHomes(data);
-      if (!selectedHomeId && data.length > 0) {
+
+      const preferredHome =
+        preferredHomeId !== undefined ? data.find((home) => home.id === preferredHomeId) ?? null : null;
+
+      if (preferredHome) {
+        setParams({ home: String(preferredHome.id) }, { replace: true });
+      } else if (!selectedHomeId && data.length > 0) {
         setParams({ home: String(data[0].id) }, { replace: true });
       } else if (selectedHomeId && !data.some((home) => String(home.id) === selectedHomeId) && data.length > 0) {
         setParams({ home: String(data[0].id) }, { replace: true });
@@ -171,8 +177,7 @@ export function HomesPage() {
       const saved = homeEditId
         ? await updateHome(homeEditId, payload)
         : await createHome(payload);
-      await loadHomes();
-      setParams({ home: String(saved.id) }, { replace: true });
+      await loadHomes(saved.id);
       resetHomeForm();
       setActionMessage(homeEditId ? 'Home updated.' : 'Home created.');
     } catch (err) {
@@ -335,7 +340,7 @@ export function HomesPage() {
             ) : homes.length === 0 ? (
               <EmptyState
                 title="No homes yet"
-                description="Create your first home to start organizing rooms and assets."
+                description="Add your first home to start tracking rooms, repairs, and upkeep."
               />
             ) : (
               <div className="home-list">
@@ -512,7 +517,7 @@ export function HomesPage() {
           ) : (
             <EmptyState
               title="No home selected"
-              description="Create a home or pick one from the library to start organizing the workspace."
+              description="Create a home or pick one from the list to begin."
             />
           )}
         </section>

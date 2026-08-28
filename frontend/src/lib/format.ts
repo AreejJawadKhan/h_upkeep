@@ -1,3 +1,5 @@
+import type { CurrencyCode } from '../context/PreferencesContext';
+
 export function formatDate(value: string | null | undefined) {
   if (!value) return '—';
   return new Intl.DateTimeFormat('en', {
@@ -17,10 +19,11 @@ export function initials(name: string) {
     .join('');
 }
 
-export function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en', {
+export function formatCurrency(value: number, currencyCode: CurrencyCode = 'PKR') {
+  const locale = currencyCode === 'PKR' ? 'en-PK' : 'en';
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'USD',
+    currency: currencyCode,
     maximumFractionDigits: 0,
   }).format(value);
 }

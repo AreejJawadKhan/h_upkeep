@@ -51,7 +51,7 @@ export function ResetPasswordPage() {
     <AuthShell
       eyebrow="Password reset"
       title="Choose a new password"
-      description="If you came from an email link, confirm the token and set a new password. Otherwise request a reset email."
+      description="Use the token from your email to set a new password, or request a fresh reset link."
       footer={
         <p>
           <Link to="/login">Back to sign in</Link>
@@ -100,4 +100,3 @@ export function ResetPasswordPage() {
     </AuthShell>
   );
 }
-

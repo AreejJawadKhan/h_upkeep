@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatCurrency, formatDate } from '../lib/format';
 import type { Home, SpendingOverviewResponse } from '../lib/types';
@@ -13,6 +14,7 @@ function pctWidth(value: number, max: number) {
 
 export function SpendingPage() {
   const { accessToken, refreshSession } = useAuth();
+  const { currencyCode } = usePreferences();
   const [params, setParams] = useSearchParams();
   const [homes, setHomes] = useState<Home[]>([]);
   const [overview, setOverview] = useState<SpendingOverviewResponse | null>(null);
@@ -80,11 +82,11 @@ export function SpendingPage() {
   const assetMax = Math.max(...(overview?.asset_breakdown.map((entry) => entry.total_spend) ?? [0]), 0);
 
   const metrics = [
-    { label: 'Total spend', value: formatCurrency(overview?.total_spend ?? 0) },
-    { label: 'This month', value: formatCurrency(overview?.this_month_spend ?? 0) },
-    { label: 'This year', value: formatCurrency(overview?.this_year_spend ?? 0) },
-    { label: 'Previous year', value: formatCurrency(overview?.previous_year_spend ?? 0) },
-    { label: 'Average per record', value: formatCurrency(overview?.average_cost ?? 0) },
+    { label: 'Total spend', value: formatCurrency(overview?.total_spend ?? 0, currencyCode) },
+    { label: 'This month', value: formatCurrency(overview?.this_month_spend ?? 0, currencyCode) },
+    { label: 'This year', value: formatCurrency(overview?.this_year_spend ?? 0, currencyCode) },
+    { label: 'Previous year', value: formatCurrency(overview?.previous_year_spend ?? 0, currencyCode) },
+    { label: 'Average per record', value: formatCurrency(overview?.average_cost ?? 0, currencyCode) },
   ];
   const hasRecords = (overview?.record_count ?? 0) > 0;
 
@@ -114,7 +116,7 @@ export function SpendingPage() {
               <p className="muted-copy">
                 {selectedHome
                   ? `Showing spending for ${selectedHome.name}.`
-                  : 'Showing spending across every home in your account.'}
+                  : 'Showing spending across every home.'}
               </p>
             </div>
 
@@ -126,7 +128,7 @@ export function SpendingPage() {
             ) : homes.length === 0 ? (
               <EmptyState
                 title="No homes yet"
-                description="Create a home first so spending analytics have somewhere to attach."
+                description="Create a home first so spending totals have somewhere to attach."
               />
             ) : (
               <div className="home-list">
@@ -156,14 +158,14 @@ export function SpendingPage() {
             <Panel title="Spending analytics" eyebrow="Derived from maintenance history">
               <div className="loading-state">
                 <div className="spinner" />
-                <p>Loading spending analytics...</p>
+                <p>Loading spending summary...</p>
               </div>
             </Panel>
           ) : overview ? (
             <>
               <Panel
                 title={selectedHome ? `${selectedHome.name} spending` : 'All-home spending'}
-                eyebrow="Phase 7 analytics"
+                eyebrow="Spending summary"
                 actions={<div className="meta-pill">{overview.record_count} records</div>}
               >
                 <div className="home-detail">
@@ -182,11 +184,11 @@ export function SpendingPage() {
                 {!hasRecords ? (
                   <EmptyState
                     title="No spending data yet"
-                    description="Add maintenance records with costs to populate the analytics view."
+                    description="Add maintenance records with costs to populate the spending summary."
                   />
                 ) : (
-                  <div className="trend-list">
-                    {overview.monthly_trend.map((entry) => (
+                  <div className="trend-list trend-scroll">
+                    {overview.monthly_trend.slice(-6).map((entry) => (
                       <div className="trend-row" key={entry.label}>
                         <div className="trend-labels">
                           <strong>{entry.label}</strong>
@@ -198,7 +200,7 @@ export function SpendingPage() {
                             style={{ width: `${pctWidth(entry.total_spend, monthlyMax)}%` }}
                           />
                         </div>
-                        <strong className="trend-value">{formatCurrency(entry.total_spend)}</strong>
+                        <strong className="trend-value">{formatCurrency(entry.total_spend, currencyCode)}</strong>
                       </div>
                     ))}
                   </div>
@@ -226,7 +228,7 @@ export function SpendingPage() {
                               style={{ width: `${pctWidth(entry.total_spend, categoryMax)}%` }}
                             />
                           </div>
-                          <strong>{formatCurrency(entry.total_spend)}</strong>
+                          <strong>{formatCurrency(entry.total_spend, currencyCode)}</strong>
                         </div>
                       ))}
                     </div>
@@ -253,7 +255,7 @@ export function SpendingPage() {
                               style={{ width: `${pctWidth(entry.total_spend, assetMax)}%` }}
                             />
                           </div>
-                          <strong>{formatCurrency(entry.total_spend)}</strong>
+                          <strong>{formatCurrency(entry.total_spend, currencyCode)}</strong>
                         </div>
                       ))}
                     </div>
@@ -274,7 +276,7 @@ export function SpendingPage() {
                         <div>
                           <strong>{record.title}</strong>
                           <p>
-                            {record.category} · {formatCurrency(record.cost)}
+                            {record.category} · {formatCurrency(record.cost, currencyCode)}
                             {record.service_provider ? ` · ${record.service_provider}` : ''}
                           </p>
                           <p className="muted-copy">

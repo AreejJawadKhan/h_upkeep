@@ -23,7 +23,7 @@ export function TermsPage() {
         <div className="legal-content">
           <p>Last updated: {LAST_UPDATED}</p>
           <p>
-            These Terms of Service apply to Hupkeep, a home-maintenance workspace that helps users organize homes,
+            These Terms of Service apply to Hupkeep, a home-maintenance app that helps users organize homes,
             repairs, maintenance history, schedules, assets, warranties, documents, reminders, and related
             information. By using Hupkeep, you agree to these terms.
           </p>

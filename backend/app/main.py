@@ -51,10 +51,10 @@ if settings.AUTO_CREATE_TABLES and make_url(settings.get_database_url()).get_bac
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
-    title="HomeRepair Log API",
+    title="Hupkeep API",
     description=(
-        "Backend API for HomeRepair Log — a production-minded home maintenance "
-        "management system. See /docs for interactive Swagger UI."
+        "Backend API for Hupkeep — a production-minded home maintenance app. "
+        "See /docs for interactive Swagger UI."
     ),
     version="0.9.0",
 )
@@ -116,7 +116,7 @@ app.include_router(warranty_router)
 
 @app.get("/", tags=["Health"])
 def root():
-    return {"message": "HomeRepair Log API is running", "version": "0.9.0"}
+    return {"message": "Hupkeep API is running", "version": "0.9.0"}
 
 
 @app.get("/health", tags=["Health"])

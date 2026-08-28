@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatCurrency, formatDate } from '../lib/format';
 import type { Asset, Home, MaintenanceCategory, MaintenanceRecord } from '../lib/types';
@@ -45,6 +46,7 @@ const emptyForm: MaintenanceForm = {
 
 export function MaintenancePage() {
   const { accessToken, refreshSession } = useAuth();
+  const { currencyCode } = usePreferences();
   const [params, setParams] = useSearchParams();
   const [homes, setHomes] = useState<Home[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -226,7 +228,7 @@ export function MaintenancePage() {
         </div>
         <div className="stat-card">
           <span>Total spend</span>
-          <strong>{formatCurrency(totalCost)}</strong>
+          <strong>{formatCurrency(totalCost, currencyCode)}</strong>
         </div>
       </div>
 
@@ -284,14 +286,14 @@ export function MaintenancePage() {
             </form>
           </Panel>
 
-          <Panel title="Homes" eyebrow="Switch context">
+          <Panel title="Homes" eyebrow="Choose a home">
             {loading ? (
               <div className="loading-state compact">
                 <div className="spinner" />
                 <p>Loading homes...</p>
               </div>
             ) : homes.length === 0 ? (
-              <EmptyState title="No homes yet" description="Create a home first, then return here to track maintenance." />
+              <EmptyState title="No homes yet" description="Create a home first, then return here to track upkeep." />
             ) : (
               <div className="home-list">
                 {homes.map((home) => {
@@ -350,7 +352,7 @@ export function MaintenancePage() {
                 ) : records.length === 0 ? (
                   <EmptyState
                     title="No maintenance records yet"
-                    description="Track repairs, upkeep, and recurring work from this home."
+                    description="Track repairs, upkeep, and routine work from this home."
                   />
                 ) : (
                   <div className="item-list">
@@ -360,7 +362,7 @@ export function MaintenancePage() {
                           <strong>{record.title}</strong>
                           <p>{record.item} · {record.category}</p>
                           <p className="muted-copy">
-                            {formatDate(record.date)} · {formatCurrency(record.cost)}{record.service_provider ? ` · ${record.service_provider}` : ''}
+                            {formatDate(record.date)} · {formatCurrency(record.cost, currencyCode)}{record.service_provider ? ` · ${record.service_provider}` : ''}
                           </p>
                           {record.next_due_date ? <p className="muted-copy">Next due {formatDate(record.next_due_date)}</p> : null}
                         </div>

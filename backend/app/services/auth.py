@@ -119,7 +119,7 @@ def get_or_create_google_user(
     name: str,
 ) -> User:
     """
-    Return the HomeRepair Log User associated with a Google identity.
+    Return the Hupkeep user associated with a Google identity.
 
     Lookup strategy
     ---------------

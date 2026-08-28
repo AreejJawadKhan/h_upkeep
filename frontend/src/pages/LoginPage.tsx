@@ -32,8 +32,8 @@ export function LoginPage() {
   return (
     <AuthShell
       eyebrow="Welcome back"
-      title="Sign in to your home workspace"
-      description="Use your verified email/password account or continue with Google."
+      title="Sign in to Hupkeep"
+      description="Use your email and password, or continue with Google."
       footer={
         <p>
           New here? <Link to="/register">Create an account</Link>
@@ -81,4 +81,3 @@ export function LoginPage() {
     </AuthShell>
   );
 }
-

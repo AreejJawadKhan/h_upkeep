@@ -24,7 +24,7 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   const { ready, user } = useAuth();
 
   if (!ready) {
-    return <LoadingState label="Opening your workspace..." />;
+    return <LoadingState label="Opening Hupkeep..." />;
   }
 
   if (!user) {

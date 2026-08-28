@@ -1,5 +1,5 @@
 """
-Email delivery service for HomeRepair Log.
+Email delivery service for Hupkeep.
 
 Development mode (MAIL_CONSOLE_MODE=True, the default):
     Emails are NOT sent via SMTP. Instead, the full email content is printed
@@ -74,7 +74,7 @@ async def send_verification_email(to_email: str, raw_token: str) -> None:
     FRONTEND_URL in settings.
     """
     verify_link = f"{settings.FRONTEND_URL}/verify-email?token={raw_token}"
-    subject = "Verify your HomeRepair Log email address"
+    subject = "Verify your Hupkeep email address"
     html_body = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -82,7 +82,7 @@ async def send_verification_email(to_email: str, raw_token: str) -> None:
     <body style="font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px;">
       <div style="max-width: 520px; margin: 0 auto; background: #fff;
                   border-radius: 8px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,.08);">
-        <h2 style="color: #1a1a2e; margin-top: 0;">Welcome to HomeRepair Log 🏠</h2>
+        <h2 style="color: #1a1a2e; margin-top: 0;">Welcome to Hupkeep 🏠</h2>
         <p style="color: #444; line-height: 1.6;">
           Thanks for signing up! Please verify your email address to activate
           your account.
@@ -101,7 +101,7 @@ async def send_verification_email(to_email: str, raw_token: str) -> None:
         </p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
         <p style="color: #aaa; font-size: 12px; text-align: center;">
-          HomeRepair Log · Manage your home maintenance, effortlessly.
+          Hupkeep · Keep your home maintenance organized.
         </p>
       </div>
     </body>
@@ -119,7 +119,7 @@ async def send_password_reset_email(to_email: str, raw_token: str) -> None:
     Tokens expire after PASSWORD_RESET_TOKEN_EXPIRE_HOURS (default 2 hours).
     """
     reset_link = f"{settings.FRONTEND_URL}/reset-password?token={raw_token}"
-    subject = "Reset your HomeRepair Log password"
+    subject = "Reset your Hupkeep password"
     html_body = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -129,7 +129,7 @@ async def send_password_reset_email(to_email: str, raw_token: str) -> None:
                   border-radius: 8px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,.08);">
         <h2 style="color: #1a1a2e; margin-top: 0;">Password Reset Request</h2>
         <p style="color: #444; line-height: 1.6;">
-          We received a request to reset the password for your HomeRepair Log
+          We received a request to reset the password for your Hupkeep
           account. Click below to choose a new password.
         </p>
         <p style="text-align: center; margin: 32px 0;">
@@ -146,7 +146,7 @@ async def send_password_reset_email(to_email: str, raw_token: str) -> None:
         </p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
         <p style="color: #aaa; font-size: 12px; text-align: center;">
-          HomeRepair Log · Manage your home maintenance, effortlessly.
+          Hupkeep · Keep your home maintenance organized.
         </p>
       </div>
     </body>

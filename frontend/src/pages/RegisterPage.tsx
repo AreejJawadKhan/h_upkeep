@@ -32,8 +32,8 @@ export function RegisterPage() {
   return (
     <AuthShell
       eyebrow="Create account"
-      title="Set up your repair log"
-      description="Registration uses email verification before login is enabled, so the account stays safe from the start."
+      title="Create your Hupkeep account"
+      description="Sign up with email verification so your account stays protected from the start."
       footer={
         <p>
           Already registered? <Link to="/login">Sign in</Link>
@@ -86,4 +86,3 @@ export function RegisterPage() {
     </AuthShell>
   );
 }
-
