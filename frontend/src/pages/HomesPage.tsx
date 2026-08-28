@@ -232,23 +232,44 @@ export function HomesPage() {
 
   async function handleDeleteHome(home: Home) {
     if (!window.confirm(`Delete ${home.name}? This will remove its areas and assets.`)) return;
-    await deleteHome(home.id);
-    await loadHomes();
-    resetHomeForm();
+    setError('');
+    try {
+      await deleteHome(home.id);
+      await loadHomes();
+      resetHomeForm();
+      if (String(home.id) === selectedHome?.id?.toString()) {
+        setParams({}, { replace: true });
+      }
+      setActionMessage('Home deleted.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete the home.');
+    }
   }
 
   async function handleDeleteArea(area: Area) {
     if (!selectedHome) return;
     if (!window.confirm(`Delete ${area.name}? Assets in that area will become unassigned.`)) return;
-    await deleteArea(selectedHome.id, area.id);
-    await loadDetails(selectedHome.id, selectedAreaFilter);
+    setError('');
+    try {
+      await deleteArea(selectedHome.id, area.id);
+      await loadDetails(selectedHome.id, selectedAreaFilter);
+      setActionMessage('Area deleted.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete the area.');
+    }
   }
 
   async function handleDeleteAsset(asset: Asset) {
     if (!selectedHome) return;
     if (!window.confirm(`Delete ${asset.name}?`)) return;
-    await deleteAsset(selectedHome.id, asset.id);
-    await loadDetails(selectedHome.id, selectedAreaFilter);
+    setError('');
+    try {
+      await deleteAsset(selectedHome.id, asset.id);
+      await loadDetails(selectedHome.id, selectedAreaFilter);
+      setActionMessage('Asset deleted.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete the asset.');
+    }
   }
 
   function startHomeEdit(home: Home) {

@@ -143,4 +143,11 @@ test('login and create a home in the workspace', async ({ page }) => {
   await expect(createdCard).toBeVisible();
   await expect(createdCard).toContainText('12 Lake View Drive');
   await expect(page.getByRole('heading', { name: /lake house/i })).toBeVisible();
+
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/app/homes?home=1.');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await expect(page.getByRole('heading', { name: /lake house/i })).toBeVisible();
+  await expect(createdCard).toContainText('12 Lake View Drive');
 });

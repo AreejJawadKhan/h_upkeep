@@ -204,13 +204,18 @@ export function MaintenancePage() {
   async function remove(record: MaintenanceRecord) {
     if (!selectedHome) return;
     if (!window.confirm(`Delete ${record.title}?`)) return;
-    await apiRequestWithRefresh<void>(
-      `/homes/${selectedHome.id}/maintenance/${record.id}`,
-      { method: 'DELETE' },
-      () => accessToken,
-      refreshSession,
-    );
-    await loadDetails(selectedHome.id, assetFilter);
+    try {
+      await apiRequestWithRefresh<void>(
+        `/homes/${selectedHome.id}/maintenance/${record.id}`,
+        { method: 'DELETE' },
+        () => accessToken,
+        refreshSession,
+      );
+      await loadDetails(selectedHome.id, assetFilter);
+      setStatus('Maintenance record deleted.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete maintenance record.');
+    }
   }
 
   const totalCost = records.reduce((sum, record) => sum + record.cost, 0);

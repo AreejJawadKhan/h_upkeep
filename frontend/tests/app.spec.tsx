@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../src/App';
+import { PreferencesProvider } from '../src/context/PreferencesContext';
 import type { User } from '../src/lib/types';
 
 const authMock = vi.hoisted(() => {
@@ -60,7 +61,9 @@ vi.mock('../src/context/AuthContext', () => ({
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <App />
+      <PreferencesProvider>
+        <App />
+      </PreferencesProvider>
     </MemoryRouter>,
   );
 }
@@ -75,11 +78,9 @@ describe('frontend workspace', () => {
   test('landing page renders the product story and legal links', () => {
     renderAt('/');
 
-    expect(screen.getByRole('heading', { name: /field journal/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /everything for your home, organized\./i })).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', {
-        name: /track repairs, rooms, systems, and reminders in a workspace that feels human\./i,
-      }),
+      screen.getByText(/keep maintenance, appliances, warranties, documents, and expenses in one place\./i),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /terms of service/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /privacy policy/i })).toBeInTheDocument();
@@ -101,7 +102,7 @@ describe('frontend workspace', () => {
       password: 'StrongPass123!',
     });
     expect(await screen.findByRole('heading', { name: /add a home/i })).toBeInTheDocument();
-    expect(screen.getByText(/protected session active/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument();
   });
 
   test('registration forwards the user to the verification screen with the submitted email', async () => {
@@ -118,7 +119,7 @@ describe('frontend workspace', () => {
       email: 'new.user@example.com',
       password: 'StrongPass123!',
     });
-    expect(await screen.findByRole('heading', { name: /confirm your address/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /confirm your email/i })).toBeInTheDocument();
     expect(screen.getByDisplayValue('new.user@example.com')).toBeInTheDocument();
   });
 
