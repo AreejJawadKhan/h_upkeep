@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { parseHomeParam } from '../lib/routes';
 import type { Area, Asset, Home } from '../lib/types';
-import { formatDate } from '../lib/format';
+import { formatDateTime } from '../lib/format';
 
 type HomeForm = {
   name: string;
@@ -406,7 +406,7 @@ export function HomesPage() {
                   </div>
                   <div>
                     <p className="detail-label">Created</p>
-                    <strong>{formatDate(selectedHome.created_at)}</strong>
+                    <strong>{formatDateTime(selectedHome.created_at)}</strong>
                   </div>
                 </div>
               </Panel>

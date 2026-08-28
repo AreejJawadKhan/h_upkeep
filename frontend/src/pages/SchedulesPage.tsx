@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
-import { formatDate } from '../lib/format';
+import { formatDate, formatDateTime } from '../lib/format';
 import { parseHomeParam } from '../lib/routes';
 import type {
   Asset,
@@ -490,7 +490,7 @@ export function SchedulesPage() {
                               </div>
                               <div>
                                 <span className="detail-label">Last completed</span>
-                                <strong>{lastCompleted ? formatDate(schedule.last_completed) : 'Never'}</strong>
+                                <strong>{lastCompleted ? formatDateTime(lastCompleted) : 'Never'}</strong>
                               </div>
                               <div>
                                 <span className="detail-label">Status</span>

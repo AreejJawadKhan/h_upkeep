@@ -1,7 +1,9 @@
 from datetime import date as date_type, datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.schemas._validation import normalize_date_only
 
 
 class MaintenanceCategory(str, Enum):
@@ -26,6 +28,11 @@ class MaintenanceBase(BaseModel):
     next_due_date: date_type | None = None
     image_url: str | None = Field(default=None, max_length=500)
 
+    @field_validator("date", "next_due_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
+
 
 class MaintenanceCreate(MaintenanceBase):
     asset_id: int | None = None
@@ -42,6 +49,11 @@ class MaintenanceUpdate(BaseModel):
     next_due_date: date_type | None = None
     image_url: str | None = Field(default=None, max_length=500)
     asset_id: int | None = None
+
+    @field_validator("date", "next_due_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
 
 
 class MaintenanceResponse(MaintenanceBase):

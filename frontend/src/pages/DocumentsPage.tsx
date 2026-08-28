@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
-import { formatDate } from '../lib/format';
+import { formatDate, formatDateTime } from '../lib/format';
 import { parseHomeParam } from '../lib/routes';
 import type { Home, MaintenanceDocument, MaintenanceRecord } from '../lib/types';
 
@@ -376,7 +376,7 @@ export function DocumentsPage() {
                   </div>
                   <div>
                     <p className="detail-label">Last updated</p>
-                    <strong>{selectedMaintenance.updated_at ? formatDate(selectedMaintenance.updated_at) : '—'}</strong>
+                    <strong>{selectedMaintenance.updated_at ? formatDateTime(selectedMaintenance.updated_at) : '—'}</strong>
                   </div>
                 </div>
               </Panel>
@@ -399,7 +399,7 @@ export function DocumentsPage() {
                         <div className="document-main">
                           <div>
                             <strong>{document.file_name}</strong>
-                            <p>{document.file_type} · {formatDate(document.created_at)}</p>
+                            <p>{document.file_type} · {formatDateTime(document.created_at)}</p>
                           </div>
                           <a className="document-link" href={document.cloudinary_url} target="_blank" rel="noreferrer">
                             Open file

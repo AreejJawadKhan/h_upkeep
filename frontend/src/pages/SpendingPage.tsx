@@ -4,7 +4,7 @@ import { Button, EmptyState, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
-import { formatCurrency, formatDate } from '../lib/format';
+import { formatCurrency, formatDate, formatDateTime } from '../lib/format';
 import { parseHomeParam } from '../lib/routes';
 import type { Home, SpendingOverviewResponse } from '../lib/types';
 
@@ -286,7 +286,7 @@ export function SpendingPage() {
                           </p>
                         </div>
                         <div className="item-actions">
-                          <span className="meta-pill">{formatDate(record.created_at)}</span>
+                          <span className="meta-pill">{formatDateTime(record.created_at)}</span>
                         </div>
                       </article>
                     ))}

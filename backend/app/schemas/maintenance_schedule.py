@@ -1,9 +1,10 @@
 from datetime import date as date_type, datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.maintenance import MaintenanceResponse
+from app.schemas._validation import normalize_date_only
 
 
 class ScheduleFrequency(str, Enum):
@@ -22,6 +23,11 @@ class MaintenanceScheduleBase(BaseModel):
     next_due_date: date_type | None = None
     reminder_enabled: bool = True
 
+    @field_validator("next_due_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
+
 
 class MaintenanceScheduleCreate(MaintenanceScheduleBase):
     asset_id: int | None = None
@@ -34,6 +40,11 @@ class MaintenanceScheduleUpdate(BaseModel):
     next_due_date: date_type | None = None
     reminder_enabled: bool | None = None
     asset_id: int | None = None
+
+    @field_validator("next_due_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
 
 
 class MaintenanceScheduleResponse(MaintenanceScheduleBase):

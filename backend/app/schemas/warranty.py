@@ -1,6 +1,8 @@
 from datetime import date as date_type, datetime
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from app.schemas._validation import normalize_date_only
 
 
 class WarrantyBase(BaseModel):
@@ -8,6 +10,11 @@ class WarrantyBase(BaseModel):
     coverage_details: str | None = Field(default=None, max_length=5000)
     start_date: date_type
     expiration_date: date_type
+
+    @field_validator("start_date", "expiration_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
 
     @model_validator(mode="after")
     def validate_dates(self):
@@ -28,6 +35,11 @@ class WarrantyUpdate(BaseModel):
     expiration_date: date_type | None = None
     asset_id: int | None = None
     document_id: int | None = None
+
+    @field_validator("start_date", "expiration_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
 
 
 class WarrantyResponse(WarrantyBase):

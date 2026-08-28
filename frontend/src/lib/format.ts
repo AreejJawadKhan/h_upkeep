@@ -1,19 +1,39 @@
 import type { CurrencyCode } from '../context/PreferencesContext';
 
-function parseDateValue(value: string | null | undefined) {
+function parseDateOnlyValue(value: string | null | undefined) {
   if (!value) return null;
 
   const date = new Date(`${value}T00:00:00Z`);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function parseDateTimeValue(value: string | Date | null | undefined) {
+  if (!value) return null;
+
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function formatDate(value: string | null | undefined) {
-  const date = parseDateValue(value);
+  const date = parseDateOnlyValue(value);
   if (!date) return '—';
   return new Intl.DateTimeFormat('en', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
+export function formatDateTime(value: string | Date | null | undefined) {
+  const date = parseDateTimeValue(value);
+  if (!date) return '—';
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
     timeZone: 'UTC',
   }).format(date);
 }

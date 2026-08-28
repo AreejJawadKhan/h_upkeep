@@ -4,7 +4,7 @@ import { Button, EmptyState, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
-import { formatCurrency, formatDate } from '../lib/format';
+import { formatCurrency, formatDate, formatDateTime } from '../lib/format';
 import { parseHomeParam } from '../lib/routes';
 import type { DashboardOverviewResponse, Home } from '../lib/types';
 
@@ -195,7 +195,7 @@ export function DashboardPage() {
                         <strong>{item.title}</strong>
                         <span>{item.home_name}</span>
                       </div>
-                      <span className="meta-pill">{formatDate(item.timestamp)}</span>
+                      <span className="meta-pill">{formatDateTime(item.timestamp)}</span>
                     </div>
                   ))}
                 </div>

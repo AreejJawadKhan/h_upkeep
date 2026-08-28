@@ -1,6 +1,8 @@
 from datetime import date as date_type, datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.schemas._validation import normalize_date_only
 
 
 class AssetBase(BaseModel):
@@ -13,6 +15,11 @@ class AssetBase(BaseModel):
     installation_date: date_type | None = None
     expected_lifespan: int | None = Field(default=None, ge=0)
     notes: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("purchase_date", "installation_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
 
 
 class AssetCreate(AssetBase):
@@ -30,6 +37,11 @@ class AssetUpdate(BaseModel):
     expected_lifespan: int | None = Field(default=None, ge=0)
     notes: str | None = Field(default=None, max_length=2000)
     area_id: int | None = None
+
+    @field_validator("purchase_date", "installation_date", mode="before")
+    @classmethod
+    def validate_date_fields(cls, value):
+        return normalize_date_only(value)
 
 
 class AssetResponse(AssetBase):
