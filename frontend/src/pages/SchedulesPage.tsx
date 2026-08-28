@@ -41,7 +41,10 @@ const emptyForm: ScheduleForm = {
 };
 
 function normalizeScheduleDate(date: string | null | undefined) {
-  return date ? new Date(`${date}T00:00:00Z`) : null;
+  if (!date) return null;
+
+  const parsed = new Date(`${date}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 export function SchedulesPage() {
