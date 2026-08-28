@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { BrandWordmark } from './BrandWordmark';
 
 export function AuthShell({
   eyebrow,
@@ -17,7 +18,7 @@ export function AuthShell({
   return (
     <main className="auth-shell">
       <section className="auth-story">
-        <div className="auth-story-badge">{eyebrow}</div>
+        <BrandWordmark subtitle={eyebrow} />
         <h1>{title}</h1>
         <p className="auth-story-copy">{description}</p>
         <div className="auth-story-notes">

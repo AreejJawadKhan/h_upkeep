@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Panel } from '../components/UI';
+import { BrandWordmark } from '../components/BrandWordmark';
 
 const LAST_UPDATED = 'August 28, 2026';
 
@@ -7,13 +8,7 @@ export function PrivacyPage() {
   return (
     <main className="landing-shell legal-shell">
       <header className="landing-topbar">
-        <div className="brand-lockup">
-          <div className="brand-mark">HR</div>
-          <div>
-            <p className="eyebrow">H Upkeep</p>
-            <h1>Home maintenance, organized</h1>
-          </div>
-        </div>
+        <BrandWordmark subtitle="Home maintenance, organized" />
         <div className="landing-actions">
           <Link className="btn btn-ghost" to="/login">
             Sign in
@@ -28,9 +23,9 @@ export function PrivacyPage() {
         <div className="legal-content">
           <p>Last updated: {LAST_UPDATED}</p>
           <p>
-            H Upkeep is a home maintenance workspace that helps people organize homes, repairs, schedules, assets,
+            Hupkeep is a home maintenance workspace that helps people organize homes, repairs, schedules, assets,
             documents, warranties, and related maintenance history. This Privacy Policy explains what information
-            H Upkeep collects, how it uses that information, and when service providers may process it on our behalf.
+            Hupkeep collects, how it uses that information, and when service providers may process it on our behalf.
           </p>
 
           <h3>Information we collect</h3>
@@ -46,7 +41,7 @@ export function PrivacyPage() {
           </p>
           <p>
             If you upload files or images, we collect those uploads and related metadata needed to store and display
-            them inside H Upkeep.
+            them inside Hupkeep.
           </p>
           <p>
             Like most web applications, we also receive technical information such as device and browser data, request
@@ -55,31 +50,31 @@ export function PrivacyPage() {
 
           <h3>Google Sign-In information</h3>
           <p>
-            If you choose to sign in with Google, H Upkeep currently requests the <code>openid</code>, <code>email</code>,
+            If you choose to sign in with Google, Hupkeep currently requests the <code>openid</code>, <code>email</code>,
             and <code>profile</code> scopes. We use that access to identify your Google account, confirm your email
-            address, and create or sign you into a H Upkeep account.
+            address, and create or sign you into a Hupkeep account.
           </p>
           <p>
-            From Google, H Upkeep receives the information returned by those scopes, which currently includes your
+            From Google, Hupkeep receives the information returned by those scopes, which currently includes your
             Google subject identifier, email address, and basic profile details such as your display name. We do not
             request access to Gmail, Google Drive, Google Calendar, contacts, or other Google services.
           </p>
           <p>
-            Google account information is used only to authenticate you and maintain your H Upkeep account. When a
-            Google sign-in creates or links an account, H Upkeep stores the Google subject identifier in its
+            Google account information is used only to authenticate you and maintain your Hupkeep account. When a
+            Google sign-in creates or links an account, Hupkeep stores the Google subject identifier in its
             authentication records so the same Google identity can be recognized on later sign-ins.
           </p>
 
           <h3>How we use information</h3>
           <p>
-            We use the information we collect to provide H Upkeep features, create and manage accounts, verify email
+            We use the information we collect to provide Hupkeep features, create and manage accounts, verify email
             addresses, send verification and password-reset emails, display your maintenance workspace, protect the
             platform from abuse, and improve the product over time.
           </p>
 
           <h3>Session and authentication</h3>
           <p>
-            H Upkeep uses signed access tokens and secure refresh-session cookies to keep you authenticated. The
+            Hupkeep uses signed access tokens and secure refresh-session cookies to keep you authenticated. The
             refresh cookie is HttpOnly, and we use it only to maintain your session and rotate access credentials.
             We also use a signed session value for the Google OAuth state check so the sign-in flow can be protected
             against cross-site request forgery.
@@ -87,7 +82,7 @@ export function PrivacyPage() {
 
           <h3>Service providers</h3>
           <p>
-            H Upkeep runs on third-party infrastructure and services that may process information on our behalf. These
+            Hupkeep runs on third-party infrastructure and services that may process information on our behalf. These
             providers currently include hosting and deployment platforms such as Railway and Vercel, database hosting
             such as Neon or Railway Postgres, email delivery such as Resend, and file storage or delivery such as
             Cloudinary. Google also processes information when you use Google Sign-In.
@@ -99,7 +94,7 @@ export function PrivacyPage() {
 
           <h3>Data retention</h3>
           <p>
-            We keep account and maintenance data for as long as it is needed to provide H Upkeep, maintain your account,
+            We keep account and maintenance data for as long as it is needed to provide Hupkeep, maintain your account,
             resolve issues, and support the features you choose to use. We do not publish a fixed retention period here
             because retention can vary based on the type of data and whether the information is still needed for the
             service.
@@ -120,7 +115,7 @@ export function PrivacyPage() {
 
           <h3>Changes to this policy</h3>
           <p>
-            We may update this Privacy Policy from time to time as H Upkeep changes or as our legal and operational
+            We may update this Privacy Policy from time to time as Hupkeep changes or as our legal and operational
             needs change. The updated version will be posted on this page with a new last-updated date.
           </p>
 
@@ -128,7 +123,7 @@ export function PrivacyPage() {
       </Panel>
 
       <footer className="landing-footer">
-        <span>H Upkeep</span>
+        <span>Hupkeep</span>
         <div className="legal-links">
           <Link to="/terms">Terms of Service</Link>
           <Link to="/login">Sign in</Link>

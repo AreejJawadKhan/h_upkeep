@@ -1,11 +1,12 @@
 import { Link, Navigate } from 'react-router-dom';
 import { Button, Panel } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
+import { BrandWordmark } from '../components/BrandWordmark';
 
 const featureCards = [
   {
     title: 'Homes with context',
-    body: 'Store address, property type, and year built in one visible card.',
+    body: 'Keep the property story, address, and build details visible at a glance.',
   },
   {
     title: 'Areas and assets',
@@ -27,13 +28,7 @@ export function LandingPage() {
   return (
     <main className="landing-shell">
       <header className="landing-topbar">
-        <div className="brand-lockup">
-          <div className="brand-mark">HR</div>
-          <div>
-            <p className="eyebrow">HomeRepair Log</p>
-            <h1>Field Journal</h1>
-          </div>
-        </div>
+        <BrandWordmark subtitle="Home upkeep, organized" />
         <div className="landing-actions">
           <Button variant="ghost" href="/login">Sign in</Button>
           <Button variant="primary" href="/register">Create account</Button>
@@ -42,11 +37,11 @@ export function LandingPage() {
 
       <section className="landing-grid">
         <div className="hero-copy">
-          <div className="hero-tag">Home maintenance, but calm.</div>
-          <h2>Track repairs, rooms, systems, and reminders in a workspace that feels human.</h2>
+          <div className="hero-tag">Calm upkeep for real homes.</div>
+          <h2>Know what your home needs next, without digging through spreadsheets or scattered notes.</h2>
           <p>
-            HomeRepair Log turns the scattered stuff around a house into a structured history:
-            what was fixed, where it lives, and what comes next.
+            Hupkeep turns the scattered stuff around a house into a clear upkeep history: what was fixed, where it
+            lives, and what comes next.
           </p>
 
           <div className="hero-actions">
@@ -72,7 +67,7 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="preview-stack">
+          <div className="preview-stack">
           <Panel title="What the system keeps" eyebrow="Workspace preview">
             <div className="preview-list">
               <div className="preview-item">
@@ -102,7 +97,7 @@ export function LandingPage() {
       </section>
 
       <footer className="landing-footer">
-        <span>Built as a real product, not a mock dashboard.</span>
+        <span>Hupkeep</span>
         <div className="legal-links">
           <Link to="/terms">Terms of Service</Link>
           <Link to="/privacy">Privacy Policy</Link>

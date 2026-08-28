@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Button } from './UI';
 import { initials } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
+import { BrandWordmark } from './BrandWordmark';
 
 export function AppShell() {
   const { user, logout } = useAuth();
@@ -9,28 +10,26 @@ export function AppShell() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand-lockup">
-          <div className="brand-mark">HR</div>
-          <div>
-            <p className="eyebrow">HomeRepair Log</p>
-            <h1>Field Journal</h1>
-          </div>
-        </div>
+        <BrandWordmark compact subtitle="Your upkeep workspace" />
 
         <p className="sidebar-copy">
-          A deliberate workspace for tracking the things that keep a house healthy.
+          Track what your home needs next, then move from overview to action without losing context.
         </p>
 
         <nav className="sidebar-nav">
           <NavLink to="/app/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Dashboard
+            Overview
           </NavLink>
           <NavLink to="/app/homes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Homes
+            My Home
+          </NavLink>
+          <NavLink to="/app/maintenance" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Maintenance
           </NavLink>
           <NavLink to="/app/schedules" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Schedules
           </NavLink>
+          <div className="sidebar-divider" />
           <NavLink to="/app/spending" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Spending
           </NavLink>
@@ -39,9 +38,6 @@ export function AppShell() {
           </NavLink>
           <NavLink to="/app/warranties" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Warranties
-          </NavLink>
-          <NavLink to="/app/maintenance" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Maintenance
           </NavLink>
         </nav>
 
@@ -64,10 +60,10 @@ export function AppShell() {
       <section className="app-workspace">
         <header className="workspace-topbar">
           <div>
-            <p className="eyebrow">Workspace</p>
+            <p className="eyebrow">Overview</p>
             <h2>Keep the home story in one place</h2>
           </div>
-          <div className="topbar-pill">Protected session active</div>
+          <div className="topbar-pill">Hupkeep workspace</div>
         </header>
 
         <div className="workspace-body">
