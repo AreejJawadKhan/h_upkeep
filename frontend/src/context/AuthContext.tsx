@@ -2,7 +2,9 @@ import {
   createContext,
   useContext,
   useEffect,
+  useCallback,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -89,105 +91,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const refreshInFlightRef = useRef<Promise<string | null> | null>(null);
 
   const googleLoginUrl = `${API_BASE}/auth/google/login`;
 
-  async function hydrateWithToken(token: string) {
+  const hydrateWithToken = useCallback(async (token: string) => {
     const current = await apiRequest<User>('/auth/me', {}, token);
     setUser(current);
     setAccessTokenState(token);
-  }
+  }, []);
 
-  async function refreshSession(): Promise<string | null> {
-    try {
-      const refreshed = await apiRequest<RefreshResponse>('/auth/refresh', { method: 'POST' });
-      await hydrateWithToken(refreshed.access_token);
-      return refreshed.access_token;
-    } catch {
-      setUser(null);
-      setAccessTokenState(null);
-      return null;
+  const refreshSession = useCallback(async (): Promise<string | null> => {
+    if (refreshInFlightRef.current) {
+      return refreshInFlightRef.current;
     }
-  }
+
+    refreshInFlightRef.current = (async () => {
+      try {
+        const refreshed = await apiRequest<RefreshResponse>('/auth/refresh', { method: 'POST' });
+        await hydrateWithToken(refreshed.access_token);
+        return refreshed.access_token;
+      } catch {
+        setUser(null);
+        setAccessTokenState(null);
+        return null;
+      } finally {
+        refreshInFlightRef.current = null;
+      }
+    })();
+
+    return refreshInFlightRef.current;
+  }, [hydrateWithToken]);
 
   useEffect(() => {
     (async () => {
       await refreshSession();
       setReady(true);
     })();
-  }, []);
+  }, [refreshSession]);
 
-  async function requestWithAuth<T>(
-    path: string,
-    options: Parameters<typeof apiRequest<T>>[1] = {},
-  ) {
-    try {
-      return await apiRequest<T>(path, options, accessToken);
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 401) {
-        const refreshedToken = await refreshSession();
-        if (refreshedToken) {
-          return apiRequest<T>(path, options, refreshedToken);
+  const requestWithAuth = useCallback(
+    async <T,>(path: string, options: Parameters<typeof apiRequest<T>>[1] = {}) => {
+      try {
+        return await apiRequest<T>(path, options, accessToken);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          const refreshedToken = await refreshSession();
+          if (refreshedToken) {
+            return apiRequest<T>(path, options, refreshedToken);
+          }
         }
+        throw error;
       }
-      throw error;
-    }
-  }
+    },
+    [accessToken, refreshSession],
+  );
 
-  async function login(input: LoginInput) {
+  const login = useCallback(async (input: LoginInput) => {
     const response = await apiRequest<TokenResponse>('/auth/login', {
       method: 'POST',
       body: input,
     });
     await hydrateWithToken(response.access_token);
-  }
+  }, [hydrateWithToken]);
 
-  async function register(input: RegisterInput) {
+  const register = useCallback((input: RegisterInput) => {
     return apiRequest<User>('/auth/register', { method: 'POST', body: input });
-  }
+  }, []);
 
-  async function logout() {
+  const logout = useCallback(async () => {
     try {
       await apiRequest<MessageResponse>('/auth/logout', { method: 'POST' });
     } finally {
       setUser(null);
       setAccessTokenState(null);
     }
-  }
+  }, []);
 
-  async function completeGoogleLogin(token: string) {
+  const completeGoogleLogin = useCallback(async (token: string) => {
     await hydrateWithToken(token);
-  }
+  }, [hydrateWithToken]);
 
-  async function verifyEmail(token: string) {
+  const verifyEmail = useCallback((token: string) => {
     return apiRequest<MessageResponse>('/auth/verify-email', {
       method: 'POST',
       body: { token },
     });
-  }
+  }, []);
 
-  async function resendVerification(email: string) {
+  const resendVerification = useCallback((email: string) => {
     return apiRequest<MessageResponse>('/auth/resend-verification', {
       method: 'POST',
       body: { email: email.trim() },
     });
-  }
+  }, []);
 
-  async function requestPasswordReset(email: string) {
+  const requestPasswordReset = useCallback((email: string) => {
     return apiRequest<MessageResponse>('/auth/password-reset/request', {
       method: 'POST',
       body: { email: email.trim() },
     });
-  }
+  }, []);
 
-  async function confirmPasswordReset(token: string, newPassword: string) {
+  const confirmPasswordReset = useCallback((token: string, newPassword: string) => {
     return apiRequest<MessageResponse>('/auth/password-reset/confirm', {
       method: 'POST',
       body: { token, new_password: newPassword },
     });
-  }
+  }, []);
 
-  async function createHome(input: HomeInput) {
+  const createHome = useCallback((input: HomeInput) => {
     return requestWithAuth<Home>('/homes', {
       method: 'POST',
       body: {
@@ -197,20 +210,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         property_type: normalizeOptionalString(input.property_type),
       },
     });
-  }
+  }, [requestWithAuth]);
 
-  async function updateHome(homeId: number, input: Partial<HomeInput>) {
+  const updateHome = useCallback((homeId: number, input: Partial<HomeInput>) => {
     return requestWithAuth<Home>(`/homes/${homeId}`, {
       method: 'PATCH',
       body: input,
     });
-  }
+  }, [requestWithAuth]);
 
-  async function deleteHome(homeId: number) {
+  const deleteHome = useCallback(async (homeId: number) => {
     await requestWithAuth<void>(`/homes/${homeId}`, { method: 'DELETE' });
-  }
+  }, [requestWithAuth]);
 
-  async function createArea(homeId: number, input: AreaInput) {
+  const createArea = useCallback((homeId: number, input: AreaInput) => {
     return requestWithAuth<Area>(`/homes/${homeId}/areas`, {
       method: 'POST',
       body: {
@@ -218,9 +231,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         notes: input.notes.trim() || null,
       },
     });
-  }
+  }, [requestWithAuth]);
 
-  async function updateArea(homeId: number, areaId: number, input: Partial<AreaInput>) {
+  const updateArea = useCallback((homeId: number, areaId: number, input: Partial<AreaInput>) => {
     const body: Record<string, string | null> = {};
     if (input.name !== undefined) body.name = normalizeOptionalString(input.name);
     if (input.notes !== undefined) body.notes = input.notes.trim() || null;
@@ -228,13 +241,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'PATCH',
       body,
     });
-  }
+  }, [requestWithAuth]);
 
-  async function deleteArea(homeId: number, areaId: number) {
+  const deleteArea = useCallback(async (homeId: number, areaId: number) => {
     await requestWithAuth<void>(`/homes/${homeId}/areas/${areaId}`, { method: 'DELETE' });
-  }
+  }, [requestWithAuth]);
 
-  async function createAsset(homeId: number, input: AssetInput) {
+  const createAsset = useCallback((homeId: number, input: AssetInput) => {
     return requestWithAuth<Asset>(`/homes/${homeId}/assets`, {
       method: 'POST',
       body: {
@@ -251,9 +264,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         area_id: input.area_id.trim() === '' ? null : Number(input.area_id),
       },
     });
-  }
+  }, [requestWithAuth]);
 
-  async function updateAsset(homeId: number, assetId: number, input: Partial<AssetInput>) {
+  const updateAsset = useCallback((homeId: number, assetId: number, input: Partial<AssetInput>) => {
     const body: Record<string, string | number | null> = {};
     if (input.name !== undefined) body.name = normalizeOptionalString(input.name);
     if (input.category !== undefined) body.category = normalizeOptionalString(input.category);
@@ -271,11 +284,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'PATCH',
       body,
     });
-  }
+  }, [requestWithAuth]);
 
-  async function deleteAsset(homeId: number, assetId: number) {
+  const deleteAsset = useCallback(async (homeId: number, assetId: number) => {
     await requestWithAuth<void>(`/homes/${homeId}/assets/${assetId}`, { method: 'DELETE' });
-  }
+  }, [requestWithAuth]);
+
+  const setAccessToken = useCallback((token: string | null) => {
+    setAccessTokenState(token);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -301,11 +318,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateAsset,
       deleteAsset,
       googleLoginUrl,
-      setAccessToken: (token) => {
-        setAccessTokenState(token);
-      },
+      setAccessToken,
     }),
-    [accessToken, ready, user],
+    [
+      accessToken,
+      completeGoogleLogin,
+      confirmPasswordReset,
+      createArea,
+      createAsset,
+      createHome,
+      deleteArea,
+      deleteAsset,
+      deleteHome,
+      googleLoginUrl,
+      login,
+      logout,
+      ready,
+      register,
+      refreshSession,
+      resendVerification,
+      requestPasswordReset,
+      setAccessToken,
+      updateArea,
+      updateAsset,
+      updateHome,
+      user,
+      verifyEmail,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

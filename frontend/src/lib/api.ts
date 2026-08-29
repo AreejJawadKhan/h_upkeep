@@ -2,6 +2,7 @@ import type { ApiErrorShape } from './types';
 
 const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
 const DEFAULT_PROD_API_BASE = 'https://api.hupkeep.areejjkhan.tech';
+const inflightGetRequests = new Map<string, Promise<unknown>>();
 
 export const API_BASE = rawApiUrl?.replace(/\/$/, '') ?? (
   import.meta.env.DEV ? 'http://localhost:8000' : DEFAULT_PROD_API_BASE
@@ -26,11 +27,32 @@ function isJsonResponse(headers: Headers) {
   return headers.get('content-type')?.includes('application/json');
 }
 
+function buildRequestKey(path: string, options: RequestOptions, token?: string | null) {
+  const method = (options.method ?? 'GET').toUpperCase();
+  if (method !== 'GET' || options.body !== undefined) {
+    return null;
+  }
+
+  const headers = new Headers(options.headers);
+  return JSON.stringify([
+    API_BASE,
+    path,
+    method,
+    token ?? '',
+    Array.from(headers.entries()),
+  ]);
+}
+
 export async function apiRequest<T>(
   path: string,
   options: RequestOptions = {},
   token?: string | null,
 ): Promise<T> {
+  const requestKey = buildRequestKey(path, options, token);
+  if (requestKey && inflightGetRequests.has(requestKey)) {
+    return inflightGetRequests.get(requestKey) as Promise<T>;
+  }
+
   const headers = new Headers(options.headers);
 
   if (options.body !== undefined && !(options.body instanceof FormData)) {
@@ -41,33 +63,47 @@ export async function apiRequest<T>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-    body:
-      options.body === undefined || options.body instanceof FormData
-        ? options.body
-        : JSON.stringify(options.body),
-  });
+  const requestPromise = (async () => {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+      body:
+        options.body === undefined || options.body instanceof FormData
+          ? options.body
+          : JSON.stringify(options.body),
+    });
 
-  const raw = await response.text();
-  const payload = raw && isJsonResponse(response.headers) ? JSON.parse(raw) : raw;
+    const raw = await response.text();
+    const payload = raw && isJsonResponse(response.headers) ? JSON.parse(raw) : raw;
 
-  if (!response.ok) {
-    const shape = typeof payload === 'object' && payload !== null ? (payload as ApiErrorShape) : null;
-    const message =
-      (shape?.detail as string | undefined) ??
-      (shape?.message as string | undefined) ??
-      `Request failed with status ${response.status}`;
-    throw new ApiError(message, response.status, shape);
+    if (!response.ok) {
+      const shape = typeof payload === 'object' && payload !== null ? (payload as ApiErrorShape) : null;
+      const message =
+        (shape?.detail as string | undefined) ??
+        (shape?.message as string | undefined) ??
+        `Request failed with status ${response.status}`;
+      throw new ApiError(message, response.status, shape);
+    }
+
+    if (response.status === 204 || raw.length === 0) {
+      return undefined as T;
+    }
+
+    return payload as T;
+  })();
+
+  if (requestKey) {
+    inflightGetRequests.set(requestKey, requestPromise);
   }
 
-  if (response.status === 204 || raw.length === 0) {
-    return undefined as T;
+  try {
+    return await requestPromise;
+  } finally {
+    if (requestKey) {
+      inflightGetRequests.delete(requestKey);
+    }
   }
-
-  return payload as T;
 }
 
 export async function apiRequestWithRefresh<T>(

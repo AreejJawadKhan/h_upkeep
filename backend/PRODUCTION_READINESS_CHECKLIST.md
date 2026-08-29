@@ -17,10 +17,10 @@ below are complete.
 1. Set `CORS_ORIGINS` to the real frontend origin(s).
 1. Configure real email delivery:
    - `MAIL_CONSOLE_MODE=false`
-   - `MAIL_SERVER`
-   - `MAIL_PORT`
-   - `MAIL_USERNAME`
-   - `MAIL_PASSWORD`
+   - `RESEND_API_KEY`
+   - `MAIL_FROM`
+   - `MAIL_FROM_NAME`
+   - keep the SMTP settings only if you still need them as a fallback
 1. Configure Google OAuth/OIDC:
    - `GOOGLE_CLIENT_ID`
    - `GOOGLE_CLIENT_SECRET`

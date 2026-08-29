@@ -16,7 +16,7 @@ export function BrandWordmark({
   return (
     <div className={`brand-lockup brand-wordmark ${compact ? 'compact' : ''} ${className}`.trim()}>
       <div className="brand-mark" aria-hidden="true">
-        <img src="/logo/hupkeep-mark.svg" alt="" className="brand-mark-image" />
+        <img src="/logo/hupkeep-mark.svg" alt="" className="brand-mark-image" loading="eager" decoding="async" />
       </div>
       <div className="brand-wordmark-copy">
         <span className="brand-wordmark-name">Hupkeep</span>

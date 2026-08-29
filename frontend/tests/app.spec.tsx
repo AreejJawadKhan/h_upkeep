@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../src/App';
 import { PreferencesProvider } from '../src/context/PreferencesContext';
@@ -75,10 +75,10 @@ beforeEach(() => {
 });
 
 describe('frontend workspace', () => {
-  test('landing page renders the product story and legal links', () => {
+  test('landing page renders the product story and legal links', async () => {
     renderAt('/');
 
-    expect(screen.getByRole('heading', { name: /everything for your home, organized\./i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /everything for your home, organized\./i })).toBeInTheDocument();
     expect(
       screen.getByText(/keep maintenance, appliances, warranties, documents, and expenses in one place\./i),
     ).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('frontend workspace', () => {
     const user = userEvent.setup();
     renderAt('/login');
 
-    expect(screen.getByLabelText(/email/i)).toBeRequired();
+    expect(await screen.findByLabelText(/email/i)).toBeRequired();
     expect(screen.getByLabelText(/password/i)).toBeRequired();
 
     await user.type(screen.getByLabelText(/email/i), 'owner@example.com');
@@ -109,7 +109,7 @@ describe('frontend workspace', () => {
     const user = userEvent.setup();
     renderAt('/register');
 
-    await user.type(screen.getByLabelText(/^name$/i), 'Areej Khan');
+    await user.type(await screen.findByLabelText(/^name$/i), 'Areej Khan');
     await user.type(screen.getByLabelText(/email/i), 'new.user@example.com');
     await user.type(screen.getByLabelText(/password/i), 'StrongPass123!');
     await user.click(screen.getByRole('button', { name: /create account/i }));
@@ -126,7 +126,7 @@ describe('frontend workspace', () => {
   test('verification token in the query string triggers the verification flow automatically', async () => {
     renderAt('/verify-email?token=verify-token-123');
 
-    expect(authMock.state.verifyEmail).toHaveBeenCalledWith('verify-token-123');
+    await waitFor(() => expect(authMock.state.verifyEmail).toHaveBeenCalledWith('verify-token-123'));
     expect(await screen.findByText(/email verified\./i)).toBeInTheDocument();
   });
 
@@ -134,7 +134,7 @@ describe('frontend workspace', () => {
     const user = userEvent.setup();
     renderAt('/reset-password');
 
-    await user.type(screen.getByLabelText(/^email address$/i), 'reset@example.com');
+    await user.type(await screen.findByLabelText(/^email address$/i), 'reset@example.com');
     await user.click(screen.getByRole('button', { name: /send reset email/i }));
 
     expect(authMock.state.requestPasswordReset).toHaveBeenCalledWith('reset@example.com');
@@ -145,7 +145,7 @@ describe('frontend workspace', () => {
     const user = userEvent.setup();
     renderAt('/reset-password?token=reset-token-123');
 
-    expect(screen.getByDisplayValue('reset-token-123')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('reset-token-123')).toBeInTheDocument();
 
     await user.type(screen.getByLabelText(/new password/i), 'NewStrongPass123!');
     await user.click(screen.getByRole('button', { name: /reset password/i }));

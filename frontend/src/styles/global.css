@@ -157,7 +157,7 @@ p {
   height: 3rem;
   display: grid;
   place-items: center;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--line);
   background: var(--surface-solid);
   overflow: hidden;
@@ -717,7 +717,7 @@ p {
 .form-error,
 .success-banner {
   padding: 0.9rem 1rem;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   border-left: 4px solid currentColor;
 }
