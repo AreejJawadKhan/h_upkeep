@@ -115,8 +115,9 @@ test('login and create a home in the workspace', async ({ page }) => {
   await page.getByRole('button', { name: /sign in/i }).click();
 
   await page.waitForURL('**/app/homes');
-  await expect(page.getByRole('heading', { name: /add a home/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /no homes yet/i })).toBeVisible();
 
+  await page.locator('.page-header-actions').getByRole('button', { name: /add home/i }).click();
   await page.getByLabel('Home name').fill('Lake House');
   await page.getByLabel('Address').fill('12 Lake View Drive');
   await page.getByLabel('Property type').fill('House');
@@ -139,7 +140,7 @@ test('login and create a home in the workspace', async ({ page }) => {
   await createHomeResponse;
   await homesRefetchResponse;
 
-  const createdCard = page.locator('.home-list .home-card').filter({ hasText: 'Lake House' });
+  const createdCard = page.locator('.home-grid .home-card').filter({ hasText: 'Lake House' });
   await expect(createdCard).toBeVisible();
   await expect(createdCard).toContainText('12 Lake View Drive');
   await expect(page.getByRole('heading', { name: /lake house/i })).toBeVisible();
