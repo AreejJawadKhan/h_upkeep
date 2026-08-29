@@ -856,6 +856,13 @@ p {
   padding: 0.35rem 0.5rem 0;
 }
 
+.workspace-topbar-start {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
 .workspace-topbar h2 {
   font-size: clamp(1.45rem, 2.2vw, 2rem);
 }
@@ -875,6 +882,25 @@ p {
   font-weight: 800;
   background: var(--surface-strong);
   border: 1px solid var(--line);
+}
+
+.mobile-nav-toggle {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-solid);
+  color: var(--text);
+  font-weight: 800;
+  box-shadow: var(--shadow);
+}
+
+.mobile-nav-toggle span:first-child {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .sidebar-divider {
@@ -923,6 +949,7 @@ p {
   align-items: end;
   gap: 0.75rem;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .page-header-filters,
@@ -931,6 +958,7 @@ p {
   gap: 0.75rem;
   flex-wrap: wrap;
   align-items: center;
+  min-width: 0;
 }
 
 .toolbar-field {
@@ -938,10 +966,19 @@ p {
   flex-direction: column;
   gap: 0.35rem;
   min-width: 12rem;
+  flex: 1 1 12rem;
 }
 
 .page-header-filters .input,
 .page-header-filters .btn {
+  min-height: 2.8rem;
+}
+
+.page-header-filters .toolbar-field {
+  width: 100%;
+}
+
+.page-header-actions .btn {
   min-height: 2.8rem;
 }
 
@@ -1038,6 +1075,8 @@ p {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  width: 100%;
+  min-height: 6rem;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1783,6 +1822,35 @@ p {
   gap: 1rem;
 }
 
+.mobile-nav-backdrop {
+  z-index: 60;
+}
+
+.mobile-nav-panel {
+  width: min(100%, 390px);
+}
+
+.mobile-nav-head {
+  align-items: center;
+}
+
+.mobile-nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mobile-nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.mobile-user-chip {
+  background: var(--surface-strong);
+}
+
 .dialog-backdrop {
   position: fixed;
   inset: 0;
@@ -1969,6 +2037,27 @@ p {
 @media (max-width: 760px) {
   .app-shell {
     grid-template-columns: 1fr;
+    padding: 0.9rem;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .workspace-topbar {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 15;
+    align-items: center;
+    padding: 0.7rem 0.85rem;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: rgba(252, 252, 248, 0.92);
+    backdrop-filter: blur(10px);
+  }
+
+  .mobile-nav-toggle {
+    display: inline-flex;
   }
 
   .landing-topbar,
@@ -1996,6 +2085,10 @@ p {
 
   .workspace-grid {
     gap: 1rem;
+  }
+
+  .workspace-body {
+    padding-bottom: 1.5rem;
   }
 
   .item-card {
@@ -2040,10 +2133,98 @@ p {
     flex-direction: column;
   }
 
+  .page-header {
+    gap: 0.85rem;
+    padding: 0;
+  }
+
+  .page-header-meta,
+  .page-header-filters,
+  .page-header-actions {
+    width: 100%;
+  }
+
+  .page-header-filters .toolbar-field {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .page-header-filters .btn,
+  .page-header-actions .btn {
+    width: 100%;
+  }
+
+  .panel,
+  .empty-state,
+  .home-card,
+  .metric-card,
+  .stat-card,
+  .feature-card,
+  .note-card,
+  .item-card,
+  .success-banner,
+  .form-error,
+  .loading-state,
+  .home-detail {
+    border-radius: 18px;
+  }
+
+  .panel-head,
+  .drawer-head,
+  .dialog-body {
+    gap: 0.8rem;
+  }
+
+  .panel-head {
+    margin-bottom: 0.9rem;
+  }
+
+  .panel-head h2,
+  .drawer-head h2,
+  .dialog-body h2 {
+    font-size: 1.25rem;
+  }
+
+  .panel-actions {
+    width: 100%;
+  }
+
+  .panel-actions .btn {
+    width: 100%;
+  }
+
+  .workspace-grid.management-grid,
+  .workspace-grid.management-grid-wide {
+    grid-template-columns: 1fr;
+  }
+
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-card-body {
+    min-height: 5.5rem;
+  }
+
   .drawer-panel {
     width: 100%;
     border-left: 0;
     border-top: 1px solid var(--line);
+    padding: 1rem;
+  }
+
+  .mobile-nav-panel {
+    max-width: 100%;
+  }
+
+  .mobile-nav-menu .nav-link {
+    width: 100%;
+    justify-content: flex-start;
+    min-height: 3rem;
+  }
+
+  .mobile-user-chip {
+    padding: 0.8rem;
   }
 
   .warranty-card,
