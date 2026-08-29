@@ -101,7 +101,7 @@ describe('frontend workspace', () => {
       email: 'owner@example.com',
       password: 'StrongPass123!',
     });
-    expect(await screen.findByRole('heading', { name: /add a home/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /my home/i, level: 1 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument();
   });
 

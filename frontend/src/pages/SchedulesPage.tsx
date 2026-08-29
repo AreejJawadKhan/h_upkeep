@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { PageHeader } from '../components/PageHeader';
+import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatDate, formatDateTime } from '../lib/format';
@@ -61,6 +63,7 @@ export function SchedulesPage() {
   const [form, setForm] = useState<ScheduleForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
@@ -153,6 +156,16 @@ export function SchedulesPage() {
     setEditingId(null);
   }
 
+  function openCreateForm() {
+    resetForm();
+    setStatus('');
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+  }
+
   function startEdit(schedule: MaintenanceSchedule) {
     setEditingId(schedule.id);
     setForm({
@@ -164,6 +177,7 @@ export function SchedulesPage() {
       asset_id: schedule.asset_id?.toString() ?? '',
     });
     setStatus('');
+    setDrawerOpen(true);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -201,6 +215,7 @@ export function SchedulesPage() {
       }
       await loadDetails(selectedHome.id, assetFilter);
       resetForm();
+      closeDrawer();
       setStatus(editingId ? 'Schedule updated.' : 'Schedule created.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save schedule.');
@@ -240,6 +255,7 @@ export function SchedulesPage() {
       );
 
       await loadDetails(selectedHome.id, assetFilter);
+      closeDrawer();
       setStatus(
         `${result.message}${result.maintenance_record ? ' A maintenance history entry was created.' : ''}`,
       );
@@ -266,6 +282,30 @@ export function SchedulesPage() {
 
   return (
     <div className="homes-page">
+      <PageHeader
+        eyebrow="Scheduling"
+        title="Schedules"
+        description="See upcoming work, recurring tasks, and what has already been handled."
+        actions={<Button onClick={openCreateForm}>+ Add schedule</Button>}
+        filters={
+          <label>
+            <span className="field-label">Filter by asset</span>
+            <select
+              className="input"
+              value={assetFilter}
+              onChange={(e) => setAssetFilter(e.target.value)}
+            >
+              <option value="all">All assets</option>
+              {assets.map((asset) => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        }
+      />
+
       <div className="overview-row schedule-overview">
         <div className="stat-card">
           <span>Schedules</span>
@@ -288,86 +328,8 @@ export function SchedulesPage() {
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid">
+      <div className="workspace-grid management-grid">
         <aside className="workspace-sidebar">
-          <Panel
-            title={editingId ? 'Edit schedule' : 'Add schedule'}
-            eyebrow="Scheduling"
-            actions={editingId ? <Button variant="ghost" onClick={resetForm}>Cancel</Button> : null}
-          >
-            <form className="stacked-form" onSubmit={submit}>
-              <Field label="Title">
-                <input
-                  className="input"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  required
-                />
-              </Field>
-              <Field label="Description">
-                <textarea
-                  className="textarea"
-                  rows={3}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
-              </Field>
-              <Field label="Frequency">
-                <select
-                  className="input"
-                  value={form.frequency}
-                  onChange={(e) => setForm({ ...form, frequency: e.target.value as ScheduleFrequency })}
-                >
-                  {SCHEDULE_FREQUENCIES.map((frequency) => (
-                    <option key={frequency.value} value={frequency.value}>
-                      {frequency.label}
-                    </option>
-                  ))}
-                </select>
-                <span className="field-hint">{SCHEDULE_FREQUENCIES.find((frequency) => frequency.value === form.frequency)?.note}</span>
-              </Field>
-              <div className="two-col">
-                <Field label="Next due date">
-                  <input
-                    className="input"
-                    type="date"
-                    value={form.next_due_date}
-                    onChange={(e) => setForm({ ...form, next_due_date: e.target.value })}
-                  />
-                </Field>
-                <Field label="Reminder">
-                  <select
-                    className="input"
-                    value={form.reminder_enabled ? 'true' : 'false'}
-                    onChange={(e) =>
-                      setForm({ ...form, reminder_enabled: e.target.value === 'true' })
-                    }
-                  >
-                    <option value="true">Enabled</option>
-                    <option value="false">Disabled</option>
-                  </select>
-                </Field>
-              </div>
-              <Field label="Asset">
-                <select
-                  className="input"
-                  value={form.asset_id}
-                  onChange={(e) => setForm({ ...form, asset_id: e.target.value })}
-                >
-                  <option value="">Unassigned</option>
-                  {assets.map((asset) => (
-                    <option key={asset.id} value={asset.id}>
-                      {asset.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Button type="submit" disabled={saving}>
-                {editingId ? 'Save schedule' : 'Create schedule'}
-              </Button>
-            </form>
-          </Panel>
-
           <Panel title="Homes" eyebrow="Choose a home">
             {loading ? (
               <div className="loading-state compact">
@@ -380,7 +342,7 @@ export function SchedulesPage() {
                 description="Create a home first, then add repeating work to keep it maintained."
               />
             ) : (
-              <div className="home-list">
+              <div className="home-grid">
                 {homes.map((home) => {
                   const active = String(home.id) === selectedHome?.id?.toString();
                   return (
@@ -410,7 +372,12 @@ export function SchedulesPage() {
               <Panel
                 title={`${selectedHome.name} schedules`}
                 eyebrow="Selected home"
-                actions={<div className="meta-pill">{selectedAssetLabel}</div>}
+                actions={
+                  <div className="panel-actions">
+                    <div className="meta-pill">{selectedAssetLabel}</div>
+                    <Button onClick={openCreateForm}>+ Add schedule</Button>
+                  </div>
+                }
               >
                 <div className="home-detail">
                   <div>
@@ -421,29 +388,16 @@ export function SchedulesPage() {
                     <p className="detail-label">Reminders enabled</p>
                     <strong>{reminderCount}</strong>
                   </div>
+                  <div>
+                    <p className="detail-label">Active filter</p>
+                    <strong>{assetFilter === 'all' ? 'All assets' : assets.find((asset) => String(asset.id) === assetFilter)?.name ?? 'Selected asset'}</strong>
+                  </div>
                 </div>
               </Panel>
 
               <Panel
                 title="Schedules"
                 eyebrow="Calendar"
-                actions={
-                  <label>
-                    <span className="field-label">Filter by asset</span>
-                    <select
-                      className="input"
-                      value={assetFilter}
-                      onChange={(e) => setAssetFilter(e.target.value)}
-                    >
-                      <option value="all">All assets</option>
-                      {assets.map((asset) => (
-                        <option key={asset.id} value={asset.id}>
-                          {asset.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                }
               >
                 {detailLoading ? (
                   <div className="loading-state compact">
@@ -454,6 +408,7 @@ export function SchedulesPage() {
                   <EmptyState
                     title="No schedules yet"
                     description="Add a repeating task for the selected home to keep routine work visible."
+                    action={<Button onClick={openCreateForm}>Add schedule</Button>}
                   />
                 ) : (
                   <div className="schedule-list">
@@ -524,10 +479,88 @@ export function SchedulesPage() {
             <EmptyState
               title="No home selected"
               description="Choose a home to start managing recurring maintenance work."
+              action={<Button onClick={openCreateForm}>Add schedule</Button>}
             />
           )}
         </section>
       </div>
+
+      <SlideOver
+        open={drawerOpen}
+        title={editingId ? 'Edit schedule' : 'Add schedule'}
+        description="Set the next due date and the reminder cadence."
+        onClose={closeDrawer}
+      >
+        <form className="stacked-form" onSubmit={submit}>
+          <Field label="Title">
+            <input
+              className="input"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              required
+            />
+          </Field>
+          <Field label="Description">
+            <textarea
+              className="textarea"
+              rows={3}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </Field>
+          <Field label="Frequency">
+            <select
+              className="input"
+              value={form.frequency}
+              onChange={(e) => setForm({ ...form, frequency: e.target.value as ScheduleFrequency })}
+            >
+              {SCHEDULE_FREQUENCIES.map((frequency) => (
+                <option key={frequency.value} value={frequency.value}>
+                  {frequency.label}
+                </option>
+              ))}
+            </select>
+            <span className="field-hint">{SCHEDULE_FREQUENCIES.find((frequency) => frequency.value === form.frequency)?.note}</span>
+          </Field>
+          <div className="two-col">
+            <Field label="Next due date">
+              <input
+                className="input"
+                type="date"
+                value={form.next_due_date}
+                onChange={(e) => setForm({ ...form, next_due_date: e.target.value })}
+              />
+            </Field>
+            <Field label="Reminder">
+              <select
+                className="input"
+                value={form.reminder_enabled ? 'true' : 'false'}
+                onChange={(e) => setForm({ ...form, reminder_enabled: e.target.value === 'true' })}
+              >
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+            </Field>
+          </div>
+          <Field label="Asset">
+            <select
+              className="input"
+              value={form.asset_id}
+              onChange={(e) => setForm({ ...form, asset_id: e.target.value })}
+            >
+              <option value="">Unassigned</option>
+              {assets.map((asset) => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Button type="submit" disabled={saving}>
+            {editingId ? 'Save schedule' : 'Create schedule'}
+          </Button>
+        </form>
+      </SlideOver>
     </div>
   );
 }

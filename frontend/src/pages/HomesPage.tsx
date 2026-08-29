@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { EmptyState, Field, Panel, Button } from '../components/UI';
+import { PageHeader } from '../components/PageHeader';
+import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { parseHomeParam } from '../lib/routes';
@@ -72,6 +74,7 @@ export function HomesPage() {
   const [assetForm, setAssetForm] = useState<AssetForm>(emptyAsset);
   const [assetEditId, setAssetEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [drawer, setDrawer] = useState<'home' | 'area' | 'asset' | null>(null);
 
   async function loadHomes(preferredHomeId?: number) {
     setLoading(true);
@@ -166,6 +169,30 @@ export function HomesPage() {
     setAssetEditId(null);
   }
 
+  function closeDrawer() {
+    setDrawer(null);
+  }
+
+  function startNewHome() {
+    resetHomeForm();
+    setActionMessage('');
+    setDrawer('home');
+  }
+
+  function startNewArea() {
+    if (!selectedHome) return;
+    resetAreaForm();
+    setActionMessage('');
+    setDrawer('area');
+  }
+
+  function startNewAsset() {
+    if (!selectedHome) return;
+    resetAssetForm();
+    setActionMessage('');
+    setDrawer('asset');
+  }
+
   async function submitHome(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -180,6 +207,7 @@ export function HomesPage() {
         : await createHome(payload);
       await loadHomes(saved.id);
       resetHomeForm();
+      closeDrawer();
       setActionMessage(homeEditId ? 'Home updated.' : 'Home created.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the home.');
@@ -201,6 +229,7 @@ export function HomesPage() {
       }
       await loadDetails(selectedHome.id, selectedAreaFilter);
       resetAreaForm();
+      closeDrawer();
       setActionMessage(areaEditId ? 'Area updated.' : 'Area created.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the area.');
@@ -222,6 +251,7 @@ export function HomesPage() {
       }
       await loadDetails(selectedHome.id, selectedAreaFilter);
       resetAssetForm();
+      closeDrawer();
       setActionMessage(assetEditId ? 'Asset updated.' : 'Asset created.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save the asset.');
@@ -281,6 +311,7 @@ export function HomesPage() {
       year_built: String(home.year_built),
     });
     setActionMessage('');
+    setDrawer('home');
   }
 
   function startAreaEdit(area: Area) {
@@ -290,6 +321,7 @@ export function HomesPage() {
       notes: area.notes ?? '',
     });
     setActionMessage('');
+    setDrawer('area');
   }
 
   function startAssetEdit(asset: Asset) {
@@ -307,6 +339,7 @@ export function HomesPage() {
       area_id: asset.area_id?.toString() ?? '',
     });
     setActionMessage('');
+    setDrawer('asset');
   }
 
   const stats = [
@@ -317,6 +350,13 @@ export function HomesPage() {
 
   return (
     <div className="homes-page">
+      <PageHeader
+        eyebrow="Management"
+        title="My Home"
+        description="Keep homes, areas, and assets organized without burying the page in forms."
+        actions={<Button onClick={startNewHome}>+ Add home</Button>}
+      />
+
       <div className="overview-row">
         {stats.map((stat) => (
           <div className="stat-card" key={stat.label}>
@@ -329,31 +369,13 @@ export function HomesPage() {
       {error ? <div className="form-error">{error}</div> : null}
       {actionMessage ? <div className="success-banner">{actionMessage}</div> : null}
 
-      <div className="workspace-grid">
+      <div className="workspace-grid management-grid">
         <aside className="workspace-sidebar">
           <Panel
-            title={homeEditId ? 'Edit home' : 'Add a home'}
-            eyebrow="Home library"
-            actions={homeEditId ? <Button variant="ghost" onClick={resetHomeForm}>Cancel</Button> : null}
+            title="Homes"
+            eyebrow="Choose a place"
+            actions={<Button variant="ghost" onClick={startNewHome}>+ Add home</Button>}
           >
-            <form className="stacked-form" onSubmit={submitHome}>
-              <Field label="Home name">
-                <input className="input" value={homeForm.name} onChange={(e) => setHomeForm({ ...homeForm, name: e.target.value })} required />
-              </Field>
-              <Field label="Address">
-                <textarea className="textarea" rows={3} value={homeForm.address} onChange={(e) => setHomeForm({ ...homeForm, address: e.target.value })} required />
-              </Field>
-              <Field label="Property type">
-                <input className="input" value={homeForm.property_type} onChange={(e) => setHomeForm({ ...homeForm, property_type: e.target.value })} required />
-              </Field>
-              <Field label="Year built">
-                <input className="input" type="number" value={homeForm.year_built} onChange={(e) => setHomeForm({ ...homeForm, year_built: e.target.value })} required />
-              </Field>
-              <Button type="submit" disabled={saving}>{homeEditId ? 'Save home' : 'Create home'}</Button>
-            </form>
-          </Panel>
-
-          <Panel title="Your homes" eyebrow="Select a place">
             {loading ? (
               <div className="loading-state compact">
                 <div className="spinner" />
@@ -363,9 +385,10 @@ export function HomesPage() {
               <EmptyState
                 title="No homes yet"
                 description="Add your first home to start tracking rooms, repairs, and upkeep."
+                action={<Button onClick={startNewHome}>Add home</Button>}
               />
             ) : (
-              <div className="home-list">
+              <div className="home-grid">
                 {homes.map((home) => {
                   const active = String(home.id) === selectedHome?.id?.toString();
                   return (
@@ -389,6 +412,19 @@ export function HomesPage() {
               </div>
             )}
           </Panel>
+
+          <Panel title="How it works" eyebrow="Quick actions">
+            <div className="preview-list">
+              <div className="preview-item">
+                <strong>Add areas from the selected home</strong>
+                <span>Keep rooms and zones grouped under one place.</span>
+              </div>
+              <div className="preview-item">
+                <strong>Add assets when you need detail</strong>
+                <span>Track appliances, systems, and other important items separately.</span>
+              </div>
+            </div>
+          </Panel>
         </aside>
 
         <section className="workspace-main">
@@ -397,7 +433,14 @@ export function HomesPage() {
               <Panel
                 title={selectedHome.name}
                 eyebrow="Selected home"
-                actions={<div className="meta-pill">{selectedHome.property_type} · Built {selectedHome.year_built}</div>}
+                actions={
+                  <div className="panel-actions">
+                    <Button variant="secondary" onClick={startNewArea}>
+                      + Add area
+                    </Button>
+                    <Button onClick={startNewAsset}>+ Add asset</Button>
+                  </div>
+                }
               >
                 <div className="home-detail">
                   <div>
@@ -408,28 +451,30 @@ export function HomesPage() {
                     <p className="detail-label">Created</p>
                     <strong>{formatDateTime(selectedHome.created_at)}</strong>
                   </div>
+                  <div>
+                    <p className="detail-label">Type</p>
+                    <strong>{selectedHome.property_type}</strong>
+                  </div>
+                  <div>
+                    <p className="detail-label">Built</p>
+                    <strong>{selectedHome.year_built}</strong>
+                  </div>
                 </div>
               </Panel>
 
               <div className="split-panels">
                 <Panel
-                  title={areaEditId ? 'Edit area' : 'Add an area'}
+                  title="Areas"
                   eyebrow="Home zones"
-                  actions={areaEditId ? <Button variant="ghost" onClick={resetAreaForm}>Cancel</Button> : null}
+                  actions={<Button variant="ghost" onClick={startNewArea}>+ Add area</Button>}
                 >
-                  <form className="stacked-form" onSubmit={submitArea}>
-                    <Field label="Area name">
-                      <input className="input" value={areaForm.name} onChange={(e) => setAreaForm({ ...areaForm, name: e.target.value })} required />
-                    </Field>
-                    <Field label="Notes">
-                      <textarea className="textarea" rows={3} value={areaForm.notes} onChange={(e) => setAreaForm({ ...areaForm, notes: e.target.value })} />
-                    </Field>
-                    <Button type="submit" disabled={saving}>{areaEditId ? 'Save area' : 'Create area'}</Button>
-                  </form>
-
                   <div className="item-list">
                     {areas.length === 0 ? (
-                      <p className="muted-copy">No areas yet. Add rooms or zones to keep the home organized.</p>
+                      <EmptyState
+                        title="No areas yet"
+                        description="Add rooms or zones to keep the home organized."
+                        action={<Button onClick={startNewArea}>Add area</Button>}
+                      />
                     ) : areas.map((area) => (
                       <article className="item-card" key={area.id}>
                         <div>
@@ -446,71 +491,27 @@ export function HomesPage() {
                 </Panel>
 
                 <Panel
-                  title={assetEditId ? 'Edit asset' : 'Add an asset'}
+                  title="Assets"
                   eyebrow="Maintainable things"
-                  actions={assetEditId ? <Button variant="ghost" onClick={resetAssetForm}>Cancel</Button> : null}
+                  actions={
+                    <div className="panel-actions">
+                      <label className="asset-toolbar">
+                        <span className="field-label">Area</span>
+                        <select
+                          className="input"
+                          value={selectedAreaFilter}
+                          onChange={(e) => setSelectedAreaFilter(e.target.value)}
+                        >
+                          <option value="all">All areas</option>
+                          {areas.map((area) => (
+                            <option key={area.id} value={area.id}>{area.name}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <Button onClick={startNewAsset}>+ Add asset</Button>
+                    </div>
+                  }
                 >
-                  <form className="stacked-form" onSubmit={submitAsset}>
-                    <Field label="Asset name">
-                      <input className="input" value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} required />
-                    </Field>
-                    <Field label="Category">
-                      <input className="input" value={assetForm.category} onChange={(e) => setAssetForm({ ...assetForm, category: e.target.value })} required />
-                    </Field>
-                    <div className="two-col">
-                      <Field label="Manufacturer">
-                        <input className="input" value={assetForm.manufacturer} onChange={(e) => setAssetForm({ ...assetForm, manufacturer: e.target.value })} />
-                      </Field>
-                      <Field label="Model">
-                        <input className="input" value={assetForm.model} onChange={(e) => setAssetForm({ ...assetForm, model: e.target.value })} />
-                      </Field>
-                    </div>
-                    <div className="two-col">
-                      <Field label="Serial number">
-                        <input className="input" value={assetForm.serial_number} onChange={(e) => setAssetForm({ ...assetForm, serial_number: e.target.value })} />
-                      </Field>
-                      <Field label="Expected lifespan (years)">
-                        <input className="input" type="number" value={assetForm.expected_lifespan} onChange={(e) => setAssetForm({ ...assetForm, expected_lifespan: e.target.value })} />
-                      </Field>
-                    </div>
-                    <div className="two-col">
-                      <Field label="Purchase date">
-                        <input className="input" type="date" value={assetForm.purchase_date} onChange={(e) => setAssetForm({ ...assetForm, purchase_date: e.target.value })} />
-                      </Field>
-                      <Field label="Installation date">
-                        <input className="input" type="date" value={assetForm.installation_date} onChange={(e) => setAssetForm({ ...assetForm, installation_date: e.target.value })} />
-                      </Field>
-                    </div>
-                    <Field label="Area">
-                      <select className="input" value={assetForm.area_id} onChange={(e) => setAssetForm({ ...assetForm, area_id: e.target.value })}>
-                        <option value="">Unassigned</option>
-                        {areas.map((area) => (
-                          <option key={area.id} value={area.id}>{area.name}</option>
-                        ))}
-                      </select>
-                    </Field>
-                    <Field label="Notes">
-                      <textarea className="textarea" rows={3} value={assetForm.notes} onChange={(e) => setAssetForm({ ...assetForm, notes: e.target.value })} />
-                    </Field>
-                    <Button type="submit" disabled={saving}>{assetEditId ? 'Save asset' : 'Create asset'}</Button>
-                  </form>
-
-                  <div className="asset-toolbar">
-                    <label>
-                      <span className="field-label">Filter by area</span>
-                      <select
-                        className="input"
-                        value={selectedAreaFilter}
-                        onChange={(e) => setSelectedAreaFilter(e.target.value)}
-                      >
-                        <option value="all">All areas</option>
-                        {areas.map((area) => (
-                          <option key={area.id} value={area.id}>{area.name}</option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-
                   <div className="item-list">
                     {detailLoading ? (
                       <div className="loading-state compact">
@@ -518,7 +519,11 @@ export function HomesPage() {
                         <p>Loading assets...</p>
                       </div>
                     ) : assets.length === 0 ? (
-                      <p className="muted-copy">No assets yet. Add appliances, systems, or tools tied to this home.</p>
+                      <EmptyState
+                        title="No assets yet"
+                        description="Add appliances, systems, or tools tied to this home."
+                        action={<Button onClick={startNewAsset}>Add asset</Button>}
+                      />
                     ) : assets.map((asset) => (
                       <article className="item-card" key={asset.id}>
                         <div>
@@ -540,10 +545,105 @@ export function HomesPage() {
             <EmptyState
               title="No home selected"
               description="Create a home or pick one from the list to begin."
+              action={<Button onClick={startNewHome}>Add home</Button>}
             />
           )}
         </section>
       </div>
+
+      <SlideOver
+        open={drawer === 'home'}
+        title={homeEditId ? 'Edit home' : 'Add home'}
+        description="Enter the basic details for a new place."
+        onClose={closeDrawer}
+      >
+        <form className="stacked-form" onSubmit={submitHome}>
+          <Field label="Home name">
+            <input className="input" value={homeForm.name} onChange={(e) => setHomeForm({ ...homeForm, name: e.target.value })} required />
+          </Field>
+          <Field label="Address">
+            <textarea className="textarea" rows={3} value={homeForm.address} onChange={(e) => setHomeForm({ ...homeForm, address: e.target.value })} required />
+          </Field>
+          <div className="two-col">
+            <Field label="Property type">
+              <input className="input" value={homeForm.property_type} onChange={(e) => setHomeForm({ ...homeForm, property_type: e.target.value })} required />
+            </Field>
+            <Field label="Year built">
+              <input className="input" type="number" value={homeForm.year_built} onChange={(e) => setHomeForm({ ...homeForm, year_built: e.target.value })} required />
+            </Field>
+          </div>
+          <Button type="submit" disabled={saving}>{homeEditId ? 'Save home' : 'Create home'}</Button>
+        </form>
+      </SlideOver>
+
+      <SlideOver
+        open={drawer === 'area'}
+        title={areaEditId ? 'Edit area' : 'Add area'}
+        description={selectedHome ? `Add a room or zone for ${selectedHome.name}.` : 'Add a room or zone.'}
+        onClose={closeDrawer}
+      >
+        <form className="stacked-form" onSubmit={submitArea}>
+          <Field label="Area name">
+            <input className="input" value={areaForm.name} onChange={(e) => setAreaForm({ ...areaForm, name: e.target.value })} required />
+          </Field>
+          <Field label="Notes">
+            <textarea className="textarea" rows={4} value={areaForm.notes} onChange={(e) => setAreaForm({ ...areaForm, notes: e.target.value })} />
+          </Field>
+          <Button type="submit" disabled={saving}>{areaEditId ? 'Save area' : 'Create area'}</Button>
+        </form>
+      </SlideOver>
+
+      <SlideOver
+        open={drawer === 'asset'}
+        title={assetEditId ? 'Edit asset' : 'Add asset'}
+        description={selectedHome ? `Track a system or appliance for ${selectedHome.name}.` : 'Track a system or appliance.'}
+        onClose={closeDrawer}
+      >
+        <form className="stacked-form" onSubmit={submitAsset}>
+          <Field label="Asset name">
+            <input className="input" value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} required />
+          </Field>
+          <Field label="Category">
+            <input className="input" value={assetForm.category} onChange={(e) => setAssetForm({ ...assetForm, category: e.target.value })} required />
+          </Field>
+          <div className="two-col">
+            <Field label="Manufacturer">
+              <input className="input" value={assetForm.manufacturer} onChange={(e) => setAssetForm({ ...assetForm, manufacturer: e.target.value })} />
+            </Field>
+            <Field label="Model">
+              <input className="input" value={assetForm.model} onChange={(e) => setAssetForm({ ...assetForm, model: e.target.value })} />
+            </Field>
+          </div>
+          <div className="two-col">
+            <Field label="Serial number">
+              <input className="input" value={assetForm.serial_number} onChange={(e) => setAssetForm({ ...assetForm, serial_number: e.target.value })} />
+            </Field>
+            <Field label="Expected lifespan (years)">
+              <input className="input" type="number" value={assetForm.expected_lifespan} onChange={(e) => setAssetForm({ ...assetForm, expected_lifespan: e.target.value })} />
+            </Field>
+          </div>
+          <div className="two-col">
+            <Field label="Purchase date">
+              <input className="input" type="date" value={assetForm.purchase_date} onChange={(e) => setAssetForm({ ...assetForm, purchase_date: e.target.value })} />
+            </Field>
+            <Field label="Installation date">
+              <input className="input" type="date" value={assetForm.installation_date} onChange={(e) => setAssetForm({ ...assetForm, installation_date: e.target.value })} />
+            </Field>
+          </div>
+          <Field label="Area">
+            <select className="input" value={assetForm.area_id} onChange={(e) => setAssetForm({ ...assetForm, area_id: e.target.value })}>
+              <option value="">Unassigned</option>
+              {areas.map((area) => (
+                <option key={area.id} value={area.id}>{area.name}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Notes">
+            <textarea className="textarea" rows={4} value={assetForm.notes} onChange={(e) => setAssetForm({ ...assetForm, notes: e.target.value })} />
+          </Field>
+          <Button type="submit" disabled={saving}>{assetEditId ? 'Save asset' : 'Create asset'}</Button>
+        </form>
+      </SlideOver>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { PageHeader } from '../components/PageHeader';
+import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatDate } from '../lib/format';
@@ -45,6 +47,7 @@ export function WarrantiesPage() {
   const [form, setForm] = useState<WarrantyForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
@@ -143,6 +146,16 @@ export function WarrantiesPage() {
     setEditingId(null);
   }
 
+  function openCreateForm() {
+    resetForm();
+    setStatus('');
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+  }
+
   function startEdit(warranty: Warranty) {
     setEditingId(warranty.id);
     setForm({
@@ -154,6 +167,7 @@ export function WarrantiesPage() {
       document_id: warranty.document_id?.toString() ?? '',
     });
     setStatus('');
+    setDrawerOpen(true);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -191,6 +205,7 @@ export function WarrantiesPage() {
       }
       await loadDetails(selectedHome.id, assetFilter);
       resetForm();
+      closeDrawer();
       setStatus(editingId ? 'Warranty updated.' : 'Warranty created.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save warranty.');
@@ -232,6 +247,30 @@ export function WarrantiesPage() {
 
   return (
     <div className="homes-page">
+      <PageHeader
+        eyebrow="Warranties"
+        title="Warranties"
+        description="Keep coverage dates, linked assets, and supporting documents visible."
+        actions={<Button onClick={openCreateForm}>+ Add warranty</Button>}
+        filters={
+          <label>
+            <span className="field-label">Filter by asset</span>
+            <select
+              className="input"
+              value={assetFilter}
+              onChange={(e) => setAssetFilter(e.target.value)}
+            >
+              <option value="all">All assets</option>
+              {assets.map((asset) => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        }
+      />
+
       <div className="overview-row warranties-overview">
         <div className="stat-card">
           <span>Warranties</span>
@@ -254,89 +293,8 @@ export function WarrantiesPage() {
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid">
+      <div className="workspace-grid management-grid">
         <aside className="workspace-sidebar">
-          <Panel
-            title={editingId ? 'Edit warranty' : 'Add warranty'}
-            eyebrow="Warranty tracking"
-            actions={editingId ? <Button variant="ghost" onClick={resetForm}>Cancel</Button> : null}
-          >
-            <form className="stacked-form" onSubmit={submit}>
-              <Field label="Provider">
-                <input
-                  className="input"
-                  value={form.provider}
-                  onChange={(e) => setForm({ ...form, provider: e.target.value })}
-                  required
-                />
-              </Field>
-              <Field label="Coverage details">
-                <textarea
-                  className="textarea"
-                  rows={4}
-                  value={form.coverage_details}
-                  onChange={(e) => setForm({ ...form, coverage_details: e.target.value })}
-                  placeholder="What the coverage includes, exclusions, or key notes."
-                />
-              </Field>
-              <div className="two-col">
-                <Field label="Start date">
-                  <input
-                    className="input"
-                    type="date"
-                    value={form.start_date}
-                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                    required
-                  />
-                </Field>
-                <Field label="Expiration date">
-                  <input
-                    className="input"
-                    type="date"
-                    value={form.expiration_date}
-                    onChange={(e) => setForm({ ...form, expiration_date: e.target.value })}
-                    required
-                  />
-                </Field>
-              </div>
-              <Field label="Asset">
-                <select
-                  className="input"
-                  value={form.asset_id}
-                  onChange={(e) => setForm({ ...form, asset_id: e.target.value })}
-                  required
-                >
-                  <option value="" disabled>
-                    Choose an asset
-                  </option>
-                  {assets.map((asset) => (
-                    <option key={asset.id} value={asset.id}>
-                      {asset.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Supporting document">
-                <select
-                  className="input"
-                  value={form.document_id}
-                  onChange={(e) => setForm({ ...form, document_id: e.target.value })}
-                >
-                  <option value="">No document linked</option>
-                  {documents.map((document) => (
-                    <option key={document.id} value={document.id}>
-                      {getDocLabel(document)}
-                    </option>
-                  ))}
-                </select>
-                <span className="field-hint">Documents are pulled from the selected home.</span>
-              </Field>
-              <Button type="submit" disabled={saving}>
-                {editingId ? 'Save warranty' : 'Create warranty'}
-              </Button>
-            </form>
-          </Panel>
-
           <Panel title="Homes" eyebrow="Choose a home">
             {loading ? (
               <div className="loading-state compact">
@@ -349,7 +307,7 @@ export function WarrantiesPage() {
                 description="Create a home first, then attach warranties to its assets."
               />
             ) : (
-              <div className="home-list">
+              <div className="home-grid">
                 {homes.map((home) => {
                   const active = String(home.id) === selectedHome?.id?.toString();
                   return (
@@ -379,7 +337,12 @@ export function WarrantiesPage() {
               <Panel
                 title={`${selectedHome.name} warranties`}
                 eyebrow="Selected home"
-                actions={<div className="meta-pill">{selectedAssetLabel}</div>}
+                actions={
+                  <div className="panel-actions">
+                    <div className="meta-pill">{selectedAssetLabel}</div>
+                    <Button onClick={openCreateForm}>+ Add warranty</Button>
+                  </div>
+                }
               >
                 <div className="home-detail">
                   <div>
@@ -393,27 +356,7 @@ export function WarrantiesPage() {
                 </div>
               </Panel>
 
-              <Panel
-                title="Warranties"
-                eyebrow="Coverage timeline"
-                actions={
-                  <label>
-                    <span className="field-label">Filter by asset</span>
-                    <select
-                      className="input"
-                      value={assetFilter}
-                      onChange={(e) => setAssetFilter(e.target.value)}
-                    >
-                      <option value="all">All assets</option>
-                      {assets.map((asset) => (
-                        <option key={asset.id} value={asset.id}>
-                          {asset.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                }
-              >
+              <Panel title="Coverage timeline" eyebrow="Status">
                 {detailLoading ? (
                   <div className="loading-state compact">
                     <div className="spinner" />
@@ -423,6 +366,7 @@ export function WarrantiesPage() {
                   <EmptyState
                     title="No warranties yet"
                     description="Add a warranty to keep expiration dates, providers, and supporting documents in one place."
+                    action={<Button onClick={openCreateForm}>Add warranty</Button>}
                   />
                 ) : (
                   <div className="warranty-list">
@@ -490,10 +434,93 @@ export function WarrantiesPage() {
             <EmptyState
               title="No home selected"
               description="Choose a home to manage its warranties and expiration dates."
+              action={<Button onClick={openCreateForm}>Add warranty</Button>}
             />
           )}
         </section>
       </div>
+
+      <SlideOver
+        open={drawerOpen}
+        title={editingId ? 'Edit warranty' : 'Add warranty'}
+        description="Track the dates, provider, and asset coverage in one place."
+        onClose={closeDrawer}
+      >
+        <form className="stacked-form" onSubmit={submit}>
+          <Field label="Provider">
+            <input
+              className="input"
+              value={form.provider}
+              onChange={(e) => setForm({ ...form, provider: e.target.value })}
+              required
+            />
+          </Field>
+          <Field label="Coverage details">
+            <textarea
+              className="textarea"
+              rows={4}
+              value={form.coverage_details}
+              onChange={(e) => setForm({ ...form, coverage_details: e.target.value })}
+              placeholder="What the coverage includes, exclusions, or key notes."
+            />
+          </Field>
+          <div className="two-col">
+            <Field label="Start date">
+              <input
+                className="input"
+                type="date"
+                value={form.start_date}
+                onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                required
+              />
+            </Field>
+            <Field label="Expiration date">
+              <input
+                className="input"
+                type="date"
+                value={form.expiration_date}
+                onChange={(e) => setForm({ ...form, expiration_date: e.target.value })}
+                required
+              />
+            </Field>
+          </div>
+          <Field label="Asset">
+            <select
+              className="input"
+              value={form.asset_id}
+              onChange={(e) => setForm({ ...form, asset_id: e.target.value })}
+              required
+            >
+              <option value="" disabled>
+                Choose an asset
+              </option>
+              {assets.map((asset) => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Supporting document">
+            <select
+              className="input"
+              value={form.document_id}
+              onChange={(e) => setForm({ ...form, document_id: e.target.value })}
+            >
+              <option value="">No document linked</option>
+              {documents.map((document) => (
+                <option key={document.id} value={document.id}>
+                  {getDocLabel(document)}
+                </option>
+              ))}
+            </select>
+            <span className="field-hint">Documents are pulled from the selected home.</span>
+          </Field>
+          <Button type="submit" disabled={saving}>
+            {editingId ? 'Save warranty' : 'Create warranty'}
+          </Button>
+        </form>
+      </SlideOver>
     </div>
   );
 }

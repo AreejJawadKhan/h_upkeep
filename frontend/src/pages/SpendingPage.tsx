@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Panel } from '../components/UI';
+import { PageHeader } from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
@@ -93,6 +94,40 @@ export function SpendingPage() {
 
   return (
     <div className="homes-page">
+      <PageHeader
+        eyebrow="Spending"
+        title="Spending"
+        description="Review home costs, monthly trends, and the records driving the totals."
+        filters={
+          <>
+            <Button
+              variant={!selectedHome ? 'primary' : 'secondary'}
+              onClick={() => setParams({}, { replace: true })}
+            >
+              All homes
+            </Button>
+            <label>
+              <span className="field-label">Home</span>
+              <select
+                className="input"
+                value={selectedHome?.id?.toString() ?? ''}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setParams(value ? { home: value } : {}, { replace: true });
+                }}
+              >
+                <option value="">All homes</option>
+                {homes.map((home) => (
+                  <option key={home.id} value={home.id}>
+                    {home.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        }
+      />
+
       <div className="overview-row spending-overview">
         {metrics.map((metric) => (
           <div className="stat-card" key={metric.label}>
@@ -104,204 +139,109 @@ export function SpendingPage() {
 
       {error ? <div className="form-error">{error}</div> : null}
 
-      <div className="workspace-grid">
-        <aside className="workspace-sidebar">
-          <Panel title="Scope" eyebrow="Spending view">
-            <div className="scope-stack">
-              <Button
-                variant={!selectedHome ? 'primary' : 'secondary'}
-                onClick={() => setParams({}, { replace: true })}
-              >
-                All homes
-              </Button>
-              <p className="muted-copy">
-                {selectedHome
-                  ? `Showing spending for ${selectedHome.name}.`
-                  : 'Showing spending across every home.'}
-              </p>
-            </div>
-
-            {loadingHomes ? (
-              <div className="loading-state compact">
-                <div className="spinner" />
-                <p>Loading homes...</p>
-              </div>
-            ) : homes.length === 0 ? (
-              <EmptyState
-                title="No homes yet"
-                description="Create a home first so spending totals have somewhere to attach."
-              />
-            ) : (
-              <div className="home-list">
-                {homes.map((home) => {
-                  const active = String(home.id) === selectedHome?.id?.toString();
-                  return (
-                    <article key={home.id} className={`home-card ${active ? 'active' : ''}`}>
-                      <button
-                        type="button"
-                        className="home-card-body"
-                        onClick={() => setParams({ home: String(home.id) })}
-                      >
-                        <strong>{home.name}</strong>
-                        <span>{home.property_type} · {home.year_built}</span>
-                        <em>{home.address}</em>
-                      </button>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-        </aside>
-
-        <section className="workspace-main">
-          {loadingOverview ? (
-            <Panel title="Spending analytics" eyebrow="Derived from maintenance history">
-              <div className="loading-state">
-                <div className="spinner" />
-                <p>Loading spending summary...</p>
-              </div>
-            </Panel>
-          ) : overview ? (
-            <>
-              <Panel
-                title={selectedHome ? `${selectedHome.name} spending` : 'All-home spending'}
-                eyebrow="Spending summary"
-                actions={<div className="meta-pill">{overview.record_count} records</div>}
-              >
-                <div className="home-detail">
-                  <div>
-                    <p className="detail-label">Scope</p>
-                    <strong>{overview.scope_home_name ?? 'All homes'}</strong>
-                  </div>
-                  <div>
-                    <p className="detail-label">Records analyzed</p>
-                    <strong>{overview.record_count}</strong>
-                  </div>
+      {loadingOverview ? (
+        <Panel title="Spending" eyebrow="Overview">
+          <div className="loading-state">
+            <div className="spinner" />
+            <p>Loading spending summary...</p>
+          </div>
+        </Panel>
+      ) : overview ? (
+        <>
+          {!hasRecords ? (
+            <EmptyState
+              title="No spending yet"
+              description="Add maintenance records with costs to start tracking expenses."
+              action={<Button href="/app/maintenance">Add maintenance</Button>}
+            />
+          ) : (
+            <div className="split-panels">
+              <Panel title="Trend" eyebrow="Monthly spend">
+                <div className="trend-list trend-scroll">
+                  {overview.monthly_trend.slice(-6).map((entry) => (
+                    <div className="trend-row" key={entry.label}>
+                      <div className="trend-labels">
+                        <strong>{entry.label}</strong>
+                        <span>{entry.record_count} records</span>
+                      </div>
+                      <div className="trend-track">
+                        <div
+                          className="trend-fill"
+                          style={{ width: `${pctWidth(entry.total_spend, monthlyMax)}%` }}
+                        />
+                      </div>
+                      <strong className="trend-value">{formatCurrency(entry.total_spend, currencyCode)}</strong>
+                    </div>
+                  ))}
                 </div>
               </Panel>
 
-              <Panel title="Trend" eyebrow="Monthly spend">
-                {!hasRecords ? (
-                  <EmptyState
-                    title="No spending data yet"
-                    description="Add maintenance records with costs to populate the spending summary."
-                  />
-                ) : (
-                  <div className="trend-list trend-scroll">
-                    {overview.monthly_trend.slice(-6).map((entry) => (
-                      <div className="trend-row" key={entry.label}>
-                        <div className="trend-labels">
-                          <strong>{entry.label}</strong>
-                          <span>{entry.record_count} records</span>
-                        </div>
-                        <div className="trend-track">
-                          <div
-                            className="trend-fill"
-                            style={{ width: `${pctWidth(entry.total_spend, monthlyMax)}%` }}
-                          />
-                        </div>
-                        <strong className="trend-value">{formatCurrency(entry.total_spend, currencyCode)}</strong>
+              <Panel title="Breakdown" eyebrow="Where the money goes">
+                <div className="breakdown-list">
+                  {overview.category_breakdown.map((entry) => (
+                    <div className="breakdown-row" key={entry.category}>
+                      <div className="breakdown-head">
+                        <strong>{entry.category}</strong>
+                        <span>{entry.record_count} records</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </Panel>
-
-              <div className="split-panels">
-                <Panel title="Categories" eyebrow="Where the money goes">
-                  {!hasRecords ? (
-                    <EmptyState
-                      title="No categories yet"
-                      description="Maintenance records will roll into category totals automatically."
-                    />
-                  ) : (
-                    <div className="breakdown-list">
-                      {overview.category_breakdown.map((entry) => (
-                        <div className="breakdown-row" key={entry.category}>
-                          <div className="breakdown-head">
-                            <strong>{entry.category}</strong>
-                            <span>{entry.record_count} records</span>
-                          </div>
-                          <div className="breakdown-track">
-                            <div
-                              className="breakdown-fill"
-                              style={{ width: `${pctWidth(entry.total_spend, categoryMax)}%` }}
-                            />
-                          </div>
-                          <strong>{formatCurrency(entry.total_spend, currencyCode)}</strong>
-                        </div>
-                      ))}
+                      <div className="breakdown-track">
+                        <div
+                          className="breakdown-fill"
+                          style={{ width: `${pctWidth(entry.total_spend, categoryMax)}%` }}
+                        />
+                      </div>
+                      <strong>{formatCurrency(entry.total_spend, currencyCode)}</strong>
                     </div>
-                  )}
-                </Panel>
-
-                <Panel title="Assets" eyebrow="Highest spend">
-                  {!hasRecords ? (
-                    <EmptyState
-                      title="No asset spending yet"
-                      description="Assign maintenance records to assets to see which systems cost the most."
-                    />
-                  ) : (
-                    <div className="breakdown-list">
-                      {overview.asset_breakdown.map((entry) => (
-                        <div className="breakdown-row" key={`${entry.asset_id ?? 'unassigned'}-${entry.asset_name}`}>
-                          <div className="breakdown-head">
-                            <strong>{entry.asset_name}</strong>
-                            <span>{entry.record_count} records</span>
-                          </div>
-                          <div className="breakdown-track">
-                            <div
-                              className="breakdown-fill accent"
-                              style={{ width: `${pctWidth(entry.total_spend, assetMax)}%` }}
-                            />
-                          </div>
-                          <strong>{formatCurrency(entry.total_spend, currencyCode)}</strong>
-                        </div>
-                      ))}
+                  ))}
+                  {overview.asset_breakdown.map((entry) => (
+                    <div className="breakdown-row" key={`${entry.asset_id ?? 'unassigned'}-${entry.asset_name}`}>
+                      <div className="breakdown-head">
+                        <strong>{entry.asset_name}</strong>
+                        <span>{entry.record_count} records</span>
+                      </div>
+                      <div className="breakdown-track">
+                        <div
+                          className="breakdown-fill accent"
+                          style={{ width: `${pctWidth(entry.total_spend, assetMax)}%` }}
+                        />
+                      </div>
+                      <strong>{formatCurrency(entry.total_spend, currencyCode)}</strong>
                     </div>
-                  )}
-                </Panel>
-              </div>
-
-              <Panel title="Recent spend" eyebrow="Latest entries">
-                {!hasRecords ? (
-                  <EmptyState
-                    title="No recent spend"
-                    description="Create maintenance records to populate the recent activity feed."
-                  />
-                ) : (
-                  <div className="item-list">
-                    {overview.recent_records.map((record) => (
-                      <article className="item-card" key={record.id}>
-                        <div>
-                          <strong>{record.title}</strong>
-                          <p>
-                            {record.category} · {formatCurrency(record.cost, currencyCode)}
-                            {record.service_provider ? ` · ${record.service_provider}` : ''}
-                          </p>
-                          <p className="muted-copy">
-                            {formatDate(record.date)} · {record.home_name}
-                            {record.asset_name ? ` · ${record.asset_name}` : ''}
-                          </p>
-                        </div>
-                        <div className="item-actions">
-                          <span className="meta-pill">{formatDateTime(record.created_at)}</span>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
+                  ))}
+                </div>
               </Panel>
-            </>
-          ) : (
-            <EmptyState
-              title="No analytics yet"
-              description="Add maintenance records with costs to generate the spending view."
-            />
+            </div>
           )}
-        </section>
-      </div>
+
+          <Panel title="Recent spend" eyebrow="Latest entries">
+            <div className="item-list">
+              {overview.recent_records.map((record) => (
+                <article className="item-card" key={record.id}>
+                  <div>
+                    <strong>{record.title}</strong>
+                    <p>
+                      {record.category} · {formatCurrency(record.cost, currencyCode)}
+                      {record.service_provider ? ` · ${record.service_provider}` : ''}
+                    </p>
+                    <p className="muted-copy">
+                      {formatDate(record.date)} · {record.home_name}
+                      {record.asset_name ? ` · ${record.asset_name}` : ''}
+                    </p>
+                  </div>
+                  <div className="item-actions">
+                    <span className="meta-pill">{formatDateTime(record.created_at)}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Panel>
+        </>
+      ) : (
+        <EmptyState
+          title="No analytics yet"
+          description="Add maintenance records with costs to generate the spending view."
+        />
+      )}
     </div>
   );
 }

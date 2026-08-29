@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { PageHeader } from '../components/PageHeader';
+import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
 import { apiRequestWithRefresh } from '../lib/api';
 import { formatDate, formatDateTime } from '../lib/format';
@@ -45,6 +47,7 @@ export function DocumentsPage() {
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [upload, setUpload] = useState<UploadForm>(emptyUpload);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedMaintenanceId = params.get('maintenance') ?? '';
@@ -152,6 +155,16 @@ export function DocumentsPage() {
     setUpload(emptyUpload);
   }, [selectedMaintenance?.id]);
 
+  function openUploadDrawer() {
+    setError('');
+    setStatus('');
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+  }
+
   async function handleFileChange(file: File | null) {
     if (!file) {
       setUpload(emptyUpload);
@@ -207,6 +220,7 @@ export function DocumentsPage() {
       );
       await loadDocuments(selectedHome.id, selectedMaintenance.id);
       setUpload(emptyUpload);
+      closeDrawer();
       setStatus('Document uploaded.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not upload document.');
@@ -240,6 +254,13 @@ export function DocumentsPage() {
 
   return (
     <div className="homes-page">
+      <PageHeader
+        eyebrow="Documents"
+        title="Documents"
+        description="Keep receipts, manuals, photos, and warranty files with the record they belong to."
+        actions={<Button onClick={openUploadDrawer}>+ Upload document</Button>}
+      />
+
       <div className="overview-row documents-overview">
         <div className="stat-card">
           <span>Documents</span>
@@ -258,38 +279,8 @@ export function DocumentsPage() {
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid">
+      <div className="workspace-grid management-grid">
         <aside className="workspace-sidebar">
-          <Panel title="Upload document" eyebrow="Files">
-            <form className="stacked-form" onSubmit={submit}>
-              <Field
-                label="File"
-                hint="Upload a PDF, image, or Word document up to 15 MB."
-              >
-                <input
-                  className="input"
-                  type="file"
-                  accept="image/*,application/pdf,.pdf,.doc,.docx"
-                  onChange={(e) => void handleFileChange(e.target.files?.[0] ?? null)}
-                />
-              </Field>
-              {upload.fileName ? (
-                <div className="document-dropzone">
-                  <strong>{upload.fileName}</strong>
-                  <span>{upload.fileType || 'Unknown type'}</span>
-                  <span>{Math.round(upload.size / 1024)} KB</span>
-                </div>
-              ) : (
-                <div className="document-dropzone empty">
-                  <span>Choose a file to attach it to the selected maintenance record.</span>
-                </div>
-              )}
-              <Button type="submit" disabled={uploading || !selectedMaintenance}>
-                {uploading ? 'Uploading...' : 'Upload document'}
-              </Button>
-            </form>
-          </Panel>
-
           <Panel title="Homes" eyebrow="Choose a home">
             {loadingHomes ? (
               <div className="loading-state compact">
@@ -381,7 +372,11 @@ export function DocumentsPage() {
                 </div>
               </Panel>
 
-              <Panel title="Attached files" eyebrow="Receipts, photos, warranties">
+              <Panel
+                title="Attached files"
+                eyebrow="Receipts, photos, warranties"
+                actions={<Button onClick={openUploadDrawer}>+ Upload document</Button>}
+              >
                 {loadingDocuments ? (
                   <div className="loading-state compact">
                     <div className="spinner" />
@@ -420,10 +415,43 @@ export function DocumentsPage() {
             <EmptyState
               title="No maintenance selected"
               description="Pick a home and maintenance record to attach documents."
+              action={<Button onClick={openUploadDrawer}>Upload document</Button>}
             />
           )}
         </section>
       </div>
+
+      <SlideOver
+        open={drawerOpen}
+        title="Upload document"
+        description="Attach a receipt, manual, photo, or warranty file to the selected maintenance record."
+        onClose={closeDrawer}
+      >
+        <form className="stacked-form" onSubmit={submit}>
+          <Field label="File" hint="Upload a PDF, image, or Word document up to 15 MB.">
+            <input
+              className="input"
+              type="file"
+              accept="image/*,application/pdf,.pdf,.doc,.docx"
+              onChange={(e) => void handleFileChange(e.target.files?.[0] ?? null)}
+            />
+          </Field>
+          {upload.fileName ? (
+            <div className="document-dropzone">
+              <strong>{upload.fileName}</strong>
+              <span>{upload.fileType || 'Unknown type'}</span>
+              <span>{Math.round(upload.size / 1024)} KB</span>
+            </div>
+          ) : (
+            <div className="document-dropzone empty">
+              <span>Choose a file to attach it to the selected maintenance record.</span>
+            </div>
+          )}
+          <Button type="submit" disabled={uploading || !selectedMaintenance}>
+            {uploading ? 'Uploading...' : 'Upload document'}
+          </Button>
+        </form>
+      </SlideOver>
     </div>
   );
 }

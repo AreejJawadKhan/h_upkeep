@@ -1,13 +1,25 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Button } from './UI';
 import { initials } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
 import { type CurrencyCode, usePreferences } from '../context/PreferencesContext';
 import { BrandWordmark } from './BrandWordmark';
 
+const PAGE_TITLES: Record<string, { title: string; description: string }> = {
+  '/app/dashboard': { title: 'Overview', description: 'A quick read on what needs attention.' },
+  '/app/homes': { title: 'My Home', description: 'Homes, rooms, and assets at a glance.' },
+  '/app/maintenance': { title: 'Maintenance', description: 'Track what has been done and what comes next.' },
+  '/app/schedules': { title: 'Schedules', description: 'Keep recurring upkeep visible.' },
+  '/app/spending': { title: 'Spending', description: 'Review home costs and trends.' },
+  '/app/documents': { title: 'Documents', description: 'Find receipts, manuals, and files quickly.' },
+  '/app/warranties': { title: 'Warranties', description: 'Watch coverage dates and linked assets.' },
+};
+
 export function AppShell() {
   const { user, logout } = useAuth();
   const { currencyCode, currencyOptions, setCurrencyCode } = usePreferences();
+  const location = useLocation();
+  const page = PAGE_TITLES[location.pathname] ?? { title: 'Hupkeep', description: 'Home maintenance made easier.' };
 
   return (
     <div className="app-shell">
@@ -69,8 +81,9 @@ export function AppShell() {
       <section className="app-workspace">
         <header className="workspace-topbar">
           <div>
-            <p className="eyebrow">Overview</p>
-            <h2>Everything for the home, in one place</h2>
+            <p className="eyebrow">Hupkeep</p>
+            <h2>{page.title}</h2>
+            <p className="workspace-topbar-copy">{page.description}</p>
           </div>
           <div className="topbar-pill">Hupkeep</div>
         </header>

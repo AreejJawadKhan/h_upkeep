@@ -206,7 +206,7 @@ export function DashboardPage() {
             </article>
           </div>
 
-          <Panel title="Your homes" eyebrow="Compact view">
+          <Panel title="Your homes">
             {homeCards.length === 0 ? (
               <EmptyState
                 title="No home health yet"
@@ -248,7 +248,7 @@ export function DashboardPage() {
           </Panel>
 
           <div className="split-panels">
-            <Panel title="Spending pulse" eyebrow="Derived from maintenance costs">
+            <Panel title="Spending">
               <div className="dashboard-spending">
                 <div className="dashboard-spending-summary">
                   <div className="hero-metric">
@@ -285,7 +285,7 @@ export function DashboardPage() {
               </div>
             </Panel>
 
-            <Panel title="Warranty alerts" eyebrow="Coverage watch">
+            <Panel title="Warranties">
               {overview.warranty_alerts.length === 0 ? (
                 <EmptyState
                   title="No warranty alerts"

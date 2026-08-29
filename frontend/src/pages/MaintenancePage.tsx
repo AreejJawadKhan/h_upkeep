@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { PageHeader } from '../components/PageHeader';
+import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
@@ -60,6 +62,7 @@ export function MaintenancePage() {
   const [form, setForm] = useState<MaintenanceForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
@@ -138,6 +141,16 @@ export function MaintenancePage() {
     setEditingId(null);
   }
 
+  function openCreateForm() {
+    resetForm();
+    setStatus('');
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+  }
+
   function startEdit(record: MaintenanceRecord) {
     setEditingId(record.id);
     setForm({
@@ -153,6 +166,7 @@ export function MaintenancePage() {
       asset_id: record.asset_id?.toString() ?? '',
     });
     setStatus('');
+    setDrawerOpen(true);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -193,6 +207,7 @@ export function MaintenancePage() {
       }
       await loadDetails(selectedHome.id, assetFilter);
       resetForm();
+      closeDrawer();
       setStatus(editingId ? 'Maintenance record updated.' : 'Maintenance record created.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save maintenance record.');
@@ -223,6 +238,24 @@ export function MaintenancePage() {
 
   return (
     <div className="homes-page">
+      <PageHeader
+        eyebrow="Maintenance"
+        title="Maintenance"
+        description="Track what has been done and what needs attention next."
+        actions={<Button onClick={openCreateForm}>+ Add maintenance</Button>}
+        filters={
+          <label>
+            <span className="field-label">Filter by asset</span>
+            <select className="input" value={assetFilter} onChange={(e) => setAssetFilter(e.target.value)}>
+              <option value="all">All assets</option>
+              {assets.map((asset) => (
+                <option key={asset.id} value={asset.id}>{asset.name}</option>
+              ))}
+            </select>
+          </label>
+        }
+      />
+
       <div className="overview-row">
         <div className="stat-card">
           <span>Maintenance records</span>
@@ -241,57 +274,8 @@ export function MaintenancePage() {
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid">
+      <div className="workspace-grid management-grid">
         <aside className="workspace-sidebar">
-          <Panel title={editingId ? 'Edit maintenance' : 'Add maintenance'} eyebrow="Maintenance log" actions={editingId ? <Button variant="ghost" onClick={resetForm}>Cancel</Button> : null}>
-            <form className="stacked-form" onSubmit={submit}>
-              <Field label="Title">
-                <input className="input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-              </Field>
-              <Field label="Item">
-                <input className="input" value={form.item} onChange={(e) => setForm({ ...form, item: e.target.value })} required />
-              </Field>
-              <Field label="Category">
-                <select className="input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as MaintenanceCategory })}>
-                  {MAINTENANCE_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Description">
-                <textarea className="textarea" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-              </Field>
-              <div className="two-col">
-                <Field label="Date">
-                  <input className="input" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
-                </Field>
-                <Field label="Cost">
-                  <input className="input" type="number" min="0" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} required />
-                </Field>
-              </div>
-              <div className="two-col">
-                <Field label="Service provider">
-                  <input className="input" value={form.service_provider} onChange={(e) => setForm({ ...form, service_provider: e.target.value })} />
-                </Field>
-                <Field label="Next due date">
-                  <input className="input" type="date" value={form.next_due_date} onChange={(e) => setForm({ ...form, next_due_date: e.target.value })} />
-                </Field>
-              </div>
-              <Field label="Image URL">
-                <input className="input" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
-              </Field>
-              <Field label="Asset">
-                <select className="input" value={form.asset_id} onChange={(e) => setForm({ ...form, asset_id: e.target.value })}>
-                  <option value="">Unassigned</option>
-                  {assets.map((asset) => (
-                    <option key={asset.id} value={asset.id}>{asset.name}</option>
-                  ))}
-                </select>
-              </Field>
-              <Button type="submit" disabled={saving}>{editingId ? 'Save record' : 'Create record'}</Button>
-            </form>
-          </Panel>
-
           <Panel title="Homes" eyebrow="Choose a home">
             {loading ? (
               <div className="loading-state compact">
@@ -299,9 +283,12 @@ export function MaintenancePage() {
                 <p>Loading homes...</p>
               </div>
             ) : homes.length === 0 ? (
-              <EmptyState title="No homes yet" description="Create a home first, then return here to track upkeep." />
+              <EmptyState
+                title="No homes yet"
+                description="Create a home first, then return here to track upkeep."
+              />
             ) : (
-              <div className="home-list">
+              <div className="home-grid">
                 {homes.map((home) => {
                   const active = String(home.id) === selectedHome?.id?.toString();
                   return (
@@ -336,20 +323,18 @@ export function MaintenancePage() {
                     <p className="detail-label">Current filter</p>
                     <strong>{assetFilter === 'all' ? 'All assets' : assets.find((asset) => String(asset.id) === assetFilter)?.name ?? 'Selected asset'}</strong>
                   </div>
+                  <div>
+                    <p className="detail-label">Next step</p>
+                    <strong>{upcomingCount > 0 ? `${upcomingCount} items due soon` : 'Nothing urgent'}</strong>
+                  </div>
                 </div>
               </Panel>
 
-              <Panel title="Records" eyebrow="History" actions={
-                <label>
-                  <span className="field-label">Filter by asset</span>
-                  <select className="input" value={assetFilter} onChange={(e) => setAssetFilter(e.target.value)}>
-                    <option value="all">All assets</option>
-                    {assets.map((asset) => (
-                      <option key={asset.id} value={asset.id}>{asset.name}</option>
-                    ))}
-                  </select>
-                </label>
-              }>
+              <Panel
+                title="Records"
+                eyebrow="History"
+                actions={<Button onClick={openCreateForm}>+ Add maintenance</Button>}
+              >
                 {detailLoading ? (
                   <div className="loading-state compact">
                     <div className="spinner" />
@@ -359,6 +344,7 @@ export function MaintenancePage() {
                   <EmptyState
                     title="No maintenance records yet"
                     description="Track repairs, upkeep, and routine work from this home."
+                    action={<Button onClick={openCreateForm}>Add maintenance</Button>}
                   />
                 ) : (
                   <div className="item-list">
@@ -383,10 +369,64 @@ export function MaintenancePage() {
               </Panel>
             </>
           ) : (
-            <EmptyState title="No home selected" description="Choose a home to start tracking maintenance records." />
+            <EmptyState title="No home selected" description="Choose a home to start tracking maintenance records." action={<Button onClick={openCreateForm}>Add maintenance</Button>} />
           )}
         </section>
       </div>
+
+      <SlideOver
+        open={drawerOpen}
+        title={editingId ? 'Edit maintenance' : 'Add maintenance'}
+        description="Record the work that was done and when it needs attention again."
+        onClose={closeDrawer}
+      >
+        <form className="stacked-form" onSubmit={submit}>
+          <Field label="Title">
+            <input className="input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+          </Field>
+          <Field label="Item">
+            <input className="input" value={form.item} onChange={(e) => setForm({ ...form, item: e.target.value })} required />
+          </Field>
+          <Field label="Category">
+            <select className="input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as MaintenanceCategory })}>
+              {MAINTENANCE_CATEGORIES.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Description">
+            <textarea className="textarea" rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </Field>
+          <div className="two-col">
+            <Field label="Date">
+              <input className="input" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
+            </Field>
+            <Field label="Cost">
+              <input className="input" type="number" min="0" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} required />
+            </Field>
+          </div>
+          <div className="two-col">
+            <Field label="Service provider">
+              <input className="input" value={form.service_provider} onChange={(e) => setForm({ ...form, service_provider: e.target.value })} />
+            </Field>
+            <Field label="Next due date">
+              <input className="input" type="date" value={form.next_due_date} onChange={(e) => setForm({ ...form, next_due_date: e.target.value })} />
+            </Field>
+          </div>
+          <Field label="Image URL">
+            <input className="input" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+          </Field>
+          <Field label="Asset">
+            <select className="input" value={form.asset_id} onChange={(e) => setForm({ ...form, asset_id: e.target.value })}>
+              <option value="">Unassigned</option>
+              {assets.map((asset) => (
+                <option key={asset.id} value={asset.id}>{asset.name}</option>
+              ))}
+            </select>
+          </Field>
+          <Button type="submit" disabled={saving}>{editingId ? 'Save record' : 'Create record'}</Button>
+        </form>
+      </SlideOver>
     </div>
   );
 }
