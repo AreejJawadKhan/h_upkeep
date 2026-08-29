@@ -19,7 +19,7 @@ export function BrandWordmark({
         <img src="/logo/hupkeep-mark.svg" alt="" className="brand-mark-image" />
       </div>
       <div className="brand-wordmark-copy">
-        <span className="brand-wordmark-name">HUPKEEP</span>
+        <span className="brand-wordmark-name">Hupkeep</span>
         {subtitle ? <span className="brand-wordmark-subtitle">{subtitle}</span> : null}
       </div>
       {trailing}

@@ -5,7 +5,7 @@
   --canvas: #f3f5e8;
   --bg: #f3f5e8;
   --bg-strong: #ebf1d2;
-  --surface: rgba(252, 252, 248, 0.94);
+  --surface: #fcfcf8;
   --surface-solid: #fcfcf8;
   --surface-strong: #ebf1d2;
   --line: #cfd4bd;
@@ -18,9 +18,9 @@
   --success: #5b742b;
   --error: #a23f2d;
   --shadow: none;
-  --radius-lg: 22px;
-  --radius-md: 14px;
-  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
   --max-width: 1440px;
   font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.5;
@@ -56,7 +56,7 @@ body::before {
     linear-gradient(90deg, rgba(207, 212, 189, 0.12) 1px, transparent 1px);
   background-size: 72px 72px;
   mask-image: linear-gradient(180deg, black 0%, transparent 100%);
-  opacity: 0.08;
+  opacity: 0.05;
 }
 
 a {
@@ -76,7 +76,6 @@ select:focus-visible,
 .mobile-nav-toggle:focus-visible {
   outline: 3px solid var(--accent-3);
   outline-offset: 3px;
-  box-shadow: 0 0 0 5px rgba(194, 211, 120, 0.24);
 }
 
 button,
@@ -168,7 +167,8 @@ p {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 0.18rem;
 }
 
 .brand-wordmark {
@@ -367,7 +367,7 @@ p {
 
 .preview-item {
   padding: 1rem;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   background: var(--surface-strong);
   border: 1px solid var(--line);
 }
@@ -620,13 +620,13 @@ p {
 .input,
 .textarea {
   width: 100%;
-  border-radius: 15px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--line);
-  background: rgba(252, 252, 248, 0.94);
+  background: var(--surface-solid);
   color: var(--text);
   padding: 0.9rem 1rem;
   outline: none;
-  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
 }
 
 .textarea {
@@ -636,7 +636,7 @@ p {
 .input:focus,
 .textarea:focus {
   border-color: var(--accent-2);
-  box-shadow: 0 0 0 4px rgba(194, 211, 120, 0.28);
+  background: var(--surface-solid);
 }
 
 .btn {
@@ -646,14 +646,18 @@ p {
   gap: 0.5rem;
   min-height: 3rem;
   padding: 0.85rem 1.15rem;
-  border-radius: 12px;
+  border-radius: 999px;
   border: 1px solid transparent;
   font-weight: 800;
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 .btn:hover {
   transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .btn:disabled {
@@ -666,10 +670,19 @@ p {
   background: var(--accent);
 }
 
+.btn-primary:hover {
+  background: #b6cd69;
+}
+
 .btn-secondary {
   color: var(--text);
   border-color: var(--line);
   background: var(--surface-solid);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-strong);
+  border-color: var(--line-strong);
 }
 
 .btn-ghost {
@@ -678,14 +691,27 @@ p {
   border-color: transparent;
 }
 
+.btn-ghost:hover {
+  background: var(--bg-strong);
+  border-color: var(--bg-strong);
+}
+
 .btn-accent {
   color: #fffdf8;
   background: var(--accent-3);
 }
 
+.btn-accent:hover {
+  background: #41571f;
+}
+
 .btn-danger {
   color: #fbf7f5;
   background: var(--error);
+}
+
+.btn-danger:hover {
+  background: #913628;
 }
 
 .form-error,
@@ -794,11 +820,17 @@ p {
   border: 1px solid transparent;
   font-weight: 700;
   font-size: 0.94rem;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.nav-link:hover {
+  background: var(--bg-strong);
+  border-color: var(--line);
 }
 
 .nav-link.active {
   background: var(--surface-strong);
-  border-color: rgba(156, 177, 80, 0.22);
+  border-color: var(--line-strong);
   color: var(--accent-3);
 }
 
@@ -1120,7 +1152,8 @@ p {
 }
 
 .home-card.active {
-  border-color: rgba(156, 177, 80, 0.36);
+  border-color: var(--line-strong);
+  background: var(--surface-strong);
   transform: translateY(-1px);
 }
 
@@ -1333,14 +1366,14 @@ p {
 }
 
 .dashboard-feature-dark .meta-pill {
-  background: rgba(252, 252, 248, 0.12);
+  background: #20261a;
   color: #fcfcf8;
-  border-color: rgba(252, 252, 248, 0.16);
+  border-color: #39431d;
 }
 
 .dashboard-feature-dark p,
 .dashboard-feature-dark span {
-  color: rgba(252, 252, 248, 0.82);
+  color: #e8ebda;
 }
 
 .dashboard-feature-dark h3 {
@@ -1474,7 +1507,7 @@ p {
   grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
   gap: 1rem;
   padding: 1rem;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   background: var(--surface-solid);
   border: 1px solid var(--line);
 }
@@ -1815,7 +1848,6 @@ p {
   display: flex;
   justify-content: flex-end;
   background: rgba(23, 24, 23, 0.28);
-  backdrop-filter: blur(3px);
 }
 
 .drawer-panel {
@@ -1907,7 +1939,7 @@ p {
 
 .dialog-panel {
   width: min(100%, 560px);
-  border-radius: 22px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   background: var(--surface-solid);
   padding: 1.35rem;
@@ -2098,10 +2130,9 @@ p {
     z-index: 15;
     align-items: center;
     padding: 0.7rem 0.85rem;
-    border-radius: 16px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--line);
-    background: rgba(252, 252, 248, 0.92);
-    backdrop-filter: blur(10px);
+    background: var(--surface-solid);
   }
 
   .mobile-nav-toggle {
@@ -2211,7 +2242,7 @@ p {
   .form-error,
   .loading-state,
   .home-detail {
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
   }
 
   .panel-head,
@@ -2273,8 +2304,8 @@ p {
     z-index: 2;
     margin-top: 0.35rem;
     padding-top: 0.15rem;
-    background: linear-gradient(to top, rgba(252, 252, 248, 0.98) 0%, rgba(252, 252, 248, 0.88) 72%, rgba(252, 252, 248, 0) 100%);
-    backdrop-filter: blur(8px);
+    background: var(--surface-solid);
+    border-top: 1px solid var(--line);
   }
 
   .stacked-form > .btn:last-child {
