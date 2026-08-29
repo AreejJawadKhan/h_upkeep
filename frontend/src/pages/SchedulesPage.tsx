@@ -283,7 +283,7 @@ export function SchedulesPage() {
   return (
     <div className="homes-page">
       <PageHeader
-        eyebrow="Scheduling"
+        eyebrow="Hupkeep"
         title="Schedules"
         description="See upcoming work, recurring tasks, and what has already been handled."
         actions={<Button onClick={openCreateForm}>+ Add schedule</Button>}

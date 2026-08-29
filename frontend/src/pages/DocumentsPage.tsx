@@ -255,7 +255,7 @@ export function DocumentsPage() {
   return (
     <div className="homes-page">
       <PageHeader
-        eyebrow="Documents"
+        eyebrow="Hupkeep"
         title="Documents"
         description="Keep receipts, manuals, photos, and warranty files with the record they belong to."
         actions={<Button onClick={openUploadDrawer}>+ Upload document</Button>}

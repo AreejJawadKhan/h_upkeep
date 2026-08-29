@@ -95,7 +95,7 @@ export function SpendingPage() {
   return (
     <div className="homes-page">
       <PageHeader
-        eyebrow="Spending"
+        eyebrow="Hupkeep"
         title="Spending"
         description="Review home costs, monthly trends, and the records driving the totals."
         filters={

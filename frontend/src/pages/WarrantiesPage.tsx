@@ -248,7 +248,7 @@ export function WarrantiesPage() {
   return (
     <div className="homes-page">
       <PageHeader
-        eyebrow="Warranties"
+        eyebrow="Hupkeep"
         title="Warranties"
         description="Keep coverage dates, linked assets, and supporting documents visible."
         actions={<Button onClick={openCreateForm}>+ Add warranty</Button>}

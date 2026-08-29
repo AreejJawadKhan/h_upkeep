@@ -239,7 +239,7 @@ export function MaintenancePage() {
   return (
     <div className="homes-page">
       <PageHeader
-        eyebrow="Maintenance"
+        eyebrow="Hupkeep"
         title="Maintenance"
         description="Track what has been done and what needs attention next."
         actions={<Button onClick={openCreateForm}>+ Add maintenance</Button>}

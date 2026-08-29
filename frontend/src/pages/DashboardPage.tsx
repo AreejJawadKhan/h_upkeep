@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Panel } from '../components/UI';
+import { PageHeader } from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { apiRequestWithRefresh } from '../lib/api';
@@ -42,7 +43,6 @@ export function DashboardPage() {
   const topActivity = overview?.recent_activity.slice(0, 3) ?? [];
   const homeCards = overview?.home_health ?? [];
   const scopeLabel = selectedHome ? selectedHome.name : 'All homes';
-  const currentGreeting = selectedHome ? `${selectedHome.name} dashboard` : 'Good morning, Areej';
 
   async function loadHomes() {
     setLoadingHomes(true);
@@ -97,40 +97,39 @@ export function DashboardPage() {
 
   return (
     <div className="homes-page dashboard-page">
-      <header className="dashboard-header">
-        <div>
-          <p className="eyebrow">Dashboard</p>
-          <h2>{currentGreeting}</h2>
-          <p className="muted-copy">Here&apos;s what needs attention across your homes.</p>
-        </div>
-
-        <label className="dashboard-scope">
-          <span className="detail-label">Scope</span>
-          <select
-            className="input"
-            value={selectedHomeId}
-            onChange={(event) => {
-              const value = event.target.value;
-              setParams(value ? { home: value } : {}, { replace: true });
-            }}
-          >
-            <option value="">All homes</option>
-            {homes.map((home) => (
-              <option key={home.id} value={home.id}>
-                {home.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </header>
+      <PageHeader
+        eyebrow="Hupkeep"
+        title="Overview"
+        description="Here&apos;s what needs attention across your homes."
+        filters={
+          <label className="dashboard-scope">
+            <span className="detail-label">Scope</span>
+            <select
+              className="input"
+              value={selectedHomeId}
+              onChange={(event) => {
+                const value = event.target.value;
+                setParams(value ? { home: value } : {}, { replace: true });
+              }}
+            >
+              <option value="">All homes</option>
+              {homes.map((home) => (
+                <option key={home.id} value={home.id}>
+                  {home.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        }
+      />
 
       {error ? <div className="form-error">{error}</div> : null}
 
       {loadingOverview ? (
-        <Panel title="Dashboard" eyebrow="Overview">
+        <Panel title="Overview" eyebrow="Hupkeep">
           <div className="loading-state">
             <div className="spinner" />
-            <p>Loading dashboard...</p>
+            <p>Loading overview...</p>
           </div>
         </Panel>
       ) : overview ? (

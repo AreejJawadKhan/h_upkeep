@@ -351,7 +351,7 @@ export function HomesPage() {
   return (
     <div className="homes-page">
       <PageHeader
-        eyebrow="Management"
+        eyebrow="Hupkeep"
         title="My Home"
         description="Keep homes, areas, and assets organized without burying the page in forms."
         actions={<Button onClick={startNewHome}>+ Add home</Button>}
