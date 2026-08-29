@@ -566,6 +566,10 @@ p {
   gap: 1rem;
 }
 
+.stacked-form {
+  min-width: 0;
+}
+
 .auth-footer {
   display: flex;
   flex-direction: column;
@@ -1820,6 +1824,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-height: 0;
 }
 
 .mobile-nav-backdrop {
@@ -2211,6 +2216,33 @@ p {
     border-left: 0;
     border-top: 1px solid var(--line);
     padding: 1rem;
+  }
+
+  .drawer-body {
+    gap: 0.85rem;
+  }
+
+  .stacked-form {
+    gap: 0.85rem;
+  }
+
+  .stacked-form > .btn:last-child,
+  .stacked-form > .button-row:last-child {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 0.35rem;
+    padding-top: 0.15rem;
+    background: linear-gradient(to top, rgba(252, 252, 248, 0.98) 0%, rgba(252, 252, 248, 0.88) 72%, rgba(252, 252, 248, 0) 100%);
+    backdrop-filter: blur(8px);
+  }
+
+  .stacked-form > .btn:last-child {
+    width: 100%;
+  }
+
+  .drawer-panel .two-col {
+    gap: 0.75rem;
   }
 
   .mobile-nav-panel {
