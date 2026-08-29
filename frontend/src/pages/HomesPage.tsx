@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { EmptyState, Field, Panel, Button } from '../components/UI';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { PageHeader } from '../components/PageHeader';
 import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
@@ -75,6 +76,15 @@ export function HomesPage() {
   const [assetEditId, setAssetEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [drawer, setDrawer] = useState<'home' | 'area' | 'asset' | null>(null);
+  const [homeQuery, setHomeQuery] = useState('');
+  const [homeSort, setHomeSort] = useState<'name' | 'recent'>('name');
+  const [deleteTarget, setDeleteTarget] = useState<
+    | { kind: 'home'; item: Home }
+    | { kind: 'area'; item: Area }
+    | { kind: 'asset'; item: Asset }
+    | null
+  >(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function loadHomes(preferredHomeId?: number) {
     setLoading(true);
@@ -261,7 +271,6 @@ export function HomesPage() {
   }
 
   async function handleDeleteHome(home: Home) {
-    if (!window.confirm(`Delete ${home.name}? This will remove its areas and assets.`)) return;
     setError('');
     try {
       await deleteHome(home.id);
@@ -278,7 +287,6 @@ export function HomesPage() {
 
   async function handleDeleteArea(area: Area) {
     if (!selectedHome) return;
-    if (!window.confirm(`Delete ${area.name}? Assets in that area will become unassigned.`)) return;
     setError('');
     try {
       await deleteArea(selectedHome.id, area.id);
@@ -291,7 +299,6 @@ export function HomesPage() {
 
   async function handleDeleteAsset(asset: Asset) {
     if (!selectedHome) return;
-    if (!window.confirm(`Delete ${asset.name}?`)) return;
     setError('');
     try {
       await deleteAsset(selectedHome.id, asset.id);
@@ -342,6 +349,29 @@ export function HomesPage() {
     setDrawer('asset');
   }
 
+  const visibleHomes = useMemo(() => {
+    const query = homeQuery.trim().toLowerCase();
+    const filtered = homes.filter((home) => {
+      if (!query) return true;
+      return [home.name, home.address, home.property_type, String(home.year_built)]
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (homeSort) {
+        case 'recent':
+          return b.created_at.localeCompare(a.created_at);
+        case 'name':
+        default:
+          return a.name.localeCompare(b.name);
+      }
+    });
+
+    return sorted;
+  }, [homeQuery, homeSort, homes]);
+
   const stats = [
     { label: 'Homes', value: homes.length.toString() },
     { label: 'Areas', value: areas.length.toString() },
@@ -355,6 +385,26 @@ export function HomesPage() {
         title="My Home"
         description="Keep homes, areas, and assets organized without burying the page in forms."
         actions={<Button onClick={startNewHome}>+ Add home</Button>}
+        filters={
+          <>
+            <label className="toolbar-field">
+              <span className="field-label">Search</span>
+              <input
+                className="input"
+                value={homeQuery}
+                onChange={(e) => setHomeQuery(e.target.value)}
+                placeholder="Search homes"
+              />
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Sort</span>
+              <select className="input" value={homeSort} onChange={(e) => setHomeSort(e.target.value as typeof homeSort)}>
+                <option value="name">Name</option>
+                <option value="recent">Recently added</option>
+              </select>
+            </label>
+          </>
+        }
       />
 
       <div className="overview-row">
@@ -389,7 +439,7 @@ export function HomesPage() {
               />
             ) : (
               <div className="home-grid">
-                {homes.map((home) => {
+                {visibleHomes.map((home) => {
                   const active = String(home.id) === selectedHome?.id?.toString();
                   return (
                     <article key={home.id} className={`home-card ${active ? 'active' : ''}`}>
@@ -404,7 +454,7 @@ export function HomesPage() {
                       </button>
                       <div className="home-actions">
                         <button type="button" onClick={() => startHomeEdit(home)}>Edit</button>
-                        <button type="button" onClick={() => void handleDeleteHome(home)}>Delete</button>
+                        <button type="button" onClick={() => setDeleteTarget({ kind: 'home', item: home })}>Delete</button>
                       </div>
                     </article>
                   );
@@ -483,7 +533,7 @@ export function HomesPage() {
                         </div>
                         <div className="item-actions">
                           <button type="button" onClick={() => startAreaEdit(area)}>Edit</button>
-                          <button type="button" onClick={() => void handleDeleteArea(area)}>Delete</button>
+                          <button type="button" onClick={() => setDeleteTarget({ kind: 'area', item: area })}>Delete</button>
                         </div>
                       </article>
                     ))}
@@ -533,7 +583,7 @@ export function HomesPage() {
                         </div>
                         <div className="item-actions">
                           <button type="button" onClick={() => startAssetEdit(asset)}>Edit</button>
-                          <button type="button" onClick={() => void handleDeleteAsset(asset)}>Delete</button>
+                          <button type="button" onClick={() => setDeleteTarget({ kind: 'asset', item: asset })}>Delete</button>
                         </div>
                       </article>
                     ))}
@@ -644,6 +694,66 @@ export function HomesPage() {
           <Button type="submit" disabled={saving}>{assetEditId ? 'Save asset' : 'Create asset'}</Button>
         </form>
       </SlideOver>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={
+          deleteTarget?.kind === 'home'
+            ? 'Delete home?'
+            : deleteTarget?.kind === 'area'
+              ? 'Delete area?'
+              : 'Delete asset?'
+        }
+        description={
+          deleteTarget?.kind === 'home' ? (
+            <>
+              <p>
+                This will remove <strong>{deleteTarget.item.name}</strong> along with its areas and assets.
+              </p>
+              <p>The action cannot be undone.</p>
+            </>
+          ) : deleteTarget?.kind === 'area' ? (
+            <>
+              <p>
+                This will remove <strong>{deleteTarget.item.name}</strong> from the selected home.
+              </p>
+              <p>Assets in that area will become unassigned.</p>
+            </>
+          ) : deleteTarget?.kind === 'asset' ? (
+            <>
+              <p>
+                This will remove <strong>{deleteTarget.item.name}</strong> from the selected home.
+              </p>
+              <p>The asset can be re-created later if needed.</p>
+            </>
+          ) : null
+        }
+        confirmLabel={
+          deleteTarget?.kind === 'home' ? 'Delete home' : deleteTarget?.kind === 'area' ? 'Delete area' : 'Delete asset'
+        }
+        destructive
+        busy={deleting}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          setDeleting(true);
+          const run = async () => {
+            try {
+              if (deleteTarget.kind === 'home') {
+                await handleDeleteHome(deleteTarget.item);
+              } else if (deleteTarget.kind === 'area') {
+                await handleDeleteArea(deleteTarget.item);
+              } else {
+                await handleDeleteAsset(deleteTarget.item);
+              }
+            } finally {
+              setDeleting(false);
+              setDeleteTarget(null);
+            }
+          };
+          void run();
+        }}
+      />
     </div>
   );
 }

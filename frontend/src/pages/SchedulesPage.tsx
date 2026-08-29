@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { PageHeader } from '../components/PageHeader';
 import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
@@ -63,7 +64,11 @@ export function SchedulesPage() {
   const [form, setForm] = useState<ScheduleForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
+  const [scheduleQuery, setScheduleQuery] = useState('');
+  const [scheduleSort, setScheduleSort] = useState<'due_soon' | 'newest' | 'title'>('due_soon');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<MaintenanceSchedule | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
@@ -226,7 +231,9 @@ export function SchedulesPage() {
 
   async function remove(schedule: MaintenanceSchedule) {
     if (!selectedHome) return;
-    if (!window.confirm(`Delete ${schedule.title}?`)) return;
+    const snapshot = schedules;
+    setDeletingId(schedule.id);
+    setSchedules((current) => current.filter((item) => item.id !== schedule.id));
     try {
       await apiRequestWithRefresh<void>(
         `/homes/${selectedHome.id}/schedules/${schedule.id}`,
@@ -234,10 +241,12 @@ export function SchedulesPage() {
         () => accessToken,
         refreshSession,
       );
-      await loadDetails(selectedHome.id, assetFilter);
       setStatus('Schedule deleted.');
     } catch (err) {
+      setSchedules(snapshot);
       setError(err instanceof Error ? err.message : 'Could not delete schedule.');
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -279,6 +288,29 @@ export function SchedulesPage() {
     if (!schedule.next_due_date) return false;
     return schedule.next_due_date < todayIso;
   }).length;
+  const visibleSchedules = useMemo(() => {
+    const query = scheduleQuery.trim().toLowerCase();
+    const filtered = schedules.filter((schedule) => {
+      if (!query) return true;
+      return [schedule.title, schedule.description ?? '', schedule.frequency, assets.find((asset) => asset.id === schedule.asset_id)?.name ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (scheduleSort) {
+        case 'title':
+          return a.title.localeCompare(b.title);
+        case 'newest':
+          return (b.next_due_date ?? '').localeCompare(a.next_due_date ?? '');
+        case 'due_soon':
+        default:
+          return (a.next_due_date ?? '9999-12-31').localeCompare(b.next_due_date ?? '9999-12-31');
+      }
+    });
+    return sorted;
+  }, [assets, scheduleQuery, scheduleSort, schedules]);
 
   return (
     <div className="homes-page">
@@ -288,21 +320,40 @@ export function SchedulesPage() {
         description="See upcoming work, recurring tasks, and what has already been handled."
         actions={<Button onClick={openCreateForm}>+ Add schedule</Button>}
         filters={
-          <label>
-            <span className="field-label">Filter by asset</span>
-            <select
-              className="input"
-              value={assetFilter}
-              onChange={(e) => setAssetFilter(e.target.value)}
-            >
-              <option value="all">All assets</option>
-              {assets.map((asset) => (
-                <option key={asset.id} value={asset.id}>
-                  {asset.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <>
+            <label className="toolbar-field">
+              <span className="field-label">Search</span>
+              <input
+                className="input"
+                value={scheduleQuery}
+                onChange={(e) => setScheduleQuery(e.target.value)}
+                placeholder="Search schedules"
+              />
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Sort</span>
+              <select className="input" value={scheduleSort} onChange={(e) => setScheduleSort(e.target.value as typeof scheduleSort)}>
+                <option value="due_soon">Due soon</option>
+                <option value="newest">Newest due date</option>
+                <option value="title">Title</option>
+              </select>
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Asset</span>
+              <select
+                className="input"
+                value={assetFilter}
+                onChange={(e) => setAssetFilter(e.target.value)}
+              >
+                <option value="all">All assets</option>
+                {assets.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
         }
       />
 
@@ -412,7 +463,7 @@ export function SchedulesPage() {
                   />
                 ) : (
                   <div className="schedule-list">
-                    {schedules.map((schedule) => {
+                    {visibleSchedules.map((schedule) => {
                       const nextDue = normalizeScheduleDate(schedule.next_due_date);
                       const lastCompleted = normalizeScheduleDate(schedule.last_completed);
                       const isOverdue = schedule.next_due_date ? schedule.next_due_date < todayIso : false;
@@ -464,7 +515,7 @@ export function SchedulesPage() {
                             <Button variant="ghost" onClick={() => startEdit(schedule)}>
                               Edit
                             </Button>
-                            <Button variant="ghost" onClick={() => void remove(schedule)}>
+                            <Button variant="ghost" onClick={() => setDeleteTarget(schedule)} disabled={deletingId === schedule.id}>
                               Delete
                             </Button>
                           </div>
@@ -561,6 +612,29 @@ export function SchedulesPage() {
           </Button>
         </form>
       </SlideOver>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete schedule?"
+        description={
+          deleteTarget ? (
+            <>
+              <p>
+                This will remove <strong>{deleteTarget.title}</strong> and its reminder cycle from Hupkeep.
+              </p>
+              <p>The action cannot be undone.</p>
+            </>
+          ) : null
+        }
+        confirmLabel="Delete schedule"
+        destructive
+        busy={deletingId !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          void remove(deleteTarget).finally(() => setDeleteTarget(null));
+        }}
+      />
     </div>
   );
 }

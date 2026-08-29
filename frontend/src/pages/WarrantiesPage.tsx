@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { PageHeader } from '../components/PageHeader';
 import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
@@ -47,7 +48,11 @@ export function WarrantiesPage() {
   const [form, setForm] = useState<WarrantyForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
+  const [warrantyQuery, setWarrantyQuery] = useState('');
+  const [warrantySort, setWarrantySort] = useState<'expiring_soon' | 'newest' | 'provider'>('expiring_soon');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Warranty | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
@@ -216,8 +221,9 @@ export function WarrantiesPage() {
 
   async function remove(warranty: Warranty) {
     if (!selectedHome) return;
-    if (!window.confirm(`Delete the warranty from ${warranty.provider}?`)) return;
-
+    const snapshot = warranties;
+    setDeletingId(warranty.id);
+    setWarranties((current) => current.filter((item) => item.id !== warranty.id));
     try {
       await apiRequestWithRefresh<void>(
         `/homes/${selectedHome.id}/warranties/${warranty.id}`,
@@ -225,10 +231,12 @@ export function WarrantiesPage() {
         () => accessToken,
         refreshSession,
       );
-      await loadDetails(selectedHome.id, assetFilter);
       setStatus('Warranty deleted.');
     } catch (err) {
+      setWarranties(snapshot);
       setError(err instanceof Error ? err.message : 'Could not delete warranty.');
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -244,6 +252,31 @@ export function WarrantiesPage() {
   }).length;
   const expiredCount = warranties.filter((warranty) => warranty.expiration_date < todayIso).length;
   const activeCount = warranties.length - expiredCount;
+  const visibleWarranties = useMemo(() => {
+    const query = warrantyQuery.trim().toLowerCase();
+    const filtered = warranties.filter((warranty) => {
+      if (!query) return true;
+      const assetName = assets.find((asset) => asset.id === warranty.asset_id)?.name ?? '';
+      const document = documents.find((item) => item.id === warranty.document_id);
+      return [warranty.provider, warranty.coverage_details ?? '', assetName, document?.file_name ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (warrantySort) {
+        case 'provider':
+          return a.provider.localeCompare(b.provider);
+        case 'newest':
+          return b.start_date.localeCompare(a.start_date);
+        case 'expiring_soon':
+        default:
+          return a.expiration_date.localeCompare(b.expiration_date);
+      }
+    });
+    return sorted;
+  }, [assets, documents, warrantyQuery, warrantySort, warranties]);
 
   return (
     <div className="homes-page">
@@ -253,21 +286,44 @@ export function WarrantiesPage() {
         description="Keep coverage dates, linked assets, and supporting documents visible."
         actions={<Button onClick={openCreateForm}>+ Add warranty</Button>}
         filters={
-          <label>
-            <span className="field-label">Filter by asset</span>
-            <select
-              className="input"
-              value={assetFilter}
-              onChange={(e) => setAssetFilter(e.target.value)}
-            >
-              <option value="all">All assets</option>
-              {assets.map((asset) => (
-                <option key={asset.id} value={asset.id}>
-                  {asset.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <>
+            <label className="toolbar-field">
+              <span className="field-label">Search</span>
+              <input
+                className="input"
+                value={warrantyQuery}
+                onChange={(e) => setWarrantyQuery(e.target.value)}
+                placeholder="Search warranties"
+              />
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Sort</span>
+              <select
+                className="input"
+                value={warrantySort}
+                onChange={(e) => setWarrantySort(e.target.value as typeof warrantySort)}
+              >
+                <option value="expiring_soon">Expiring soon</option>
+                <option value="newest">Newest</option>
+                <option value="provider">Provider</option>
+              </select>
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Asset</span>
+              <select
+                className="input"
+                value={assetFilter}
+                onChange={(e) => setAssetFilter(e.target.value)}
+              >
+                <option value="all">All assets</option>
+                {assets.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
         }
       />
 
@@ -370,7 +426,7 @@ export function WarrantiesPage() {
                   />
                 ) : (
                   <div className="warranty-list">
-                    {warranties.map((warranty) => {
+                    {visibleWarranties.map((warranty) => {
                       const assetName = assets.find((asset) => asset.id === warranty.asset_id)?.name ?? 'Asset';
                       const document = documents.find((item) => item.id === warranty.document_id);
                       const isExpired = warranty.expiration_date < todayIso;
@@ -419,7 +475,7 @@ export function WarrantiesPage() {
                             <Button variant="accent" onClick={() => startEdit(warranty)}>
                               Edit
                             </Button>
-                            <Button variant="ghost" onClick={() => void remove(warranty)}>
+                            <Button variant="ghost" onClick={() => setDeleteTarget(warranty)} disabled={deletingId === warranty.id}>
                               Delete
                             </Button>
                           </div>
@@ -521,6 +577,29 @@ export function WarrantiesPage() {
           </Button>
         </form>
       </SlideOver>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete warranty?"
+        description={
+          deleteTarget ? (
+            <>
+              <p>
+                This will remove the warranty from <strong>{deleteTarget.provider}</strong>.
+              </p>
+              <p>The record can be recreated later if needed.</p>
+            </>
+          ) : null
+        }
+        confirmLabel="Delete warranty"
+        destructive
+        busy={deletingId !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          void remove(deleteTarget).finally(() => setDeleteTarget(null));
+        }}
+      />
     </div>
   );
 }

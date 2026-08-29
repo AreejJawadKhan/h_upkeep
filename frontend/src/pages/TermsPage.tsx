@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Panel } from '../components/UI';
 import { BrandWordmark } from '../components/BrandWordmark';
 
 const LAST_UPDATED = 'August 28, 2026';
@@ -7,9 +6,9 @@ const LAST_UPDATED = 'August 28, 2026';
 export function TermsPage() {
   return (
     <main className="landing-shell legal-shell">
-      <header className="landing-topbar">
+      <header className="landing-topbar legal-topbar">
         <BrandWordmark subtitle="Home maintenance, organized" />
-        <div className="landing-actions">
+        <div className="landing-actions legal-actions">
           <Link className="btn btn-ghost" to="/login">
             Sign in
           </Link>
@@ -19,22 +18,29 @@ export function TermsPage() {
         </div>
       </header>
 
-      <Panel title="Terms of Service" eyebrow="Legal" className="legal-panel">
-        <div className="legal-content">
-          <p>Last updated: {LAST_UPDATED}</p>
+      <article className="legal-page">
+        <header className="legal-hero">
+          <p className="legal-meta">Last updated {LAST_UPDATED}</p>
+          <h1 className="legal-title">Terms of Service</h1>
           <p>
             These Terms of Service apply to Hupkeep, a home-maintenance app that helps users organize homes,
             repairs, maintenance history, schedules, assets, warranties, documents, reminders, and related
             information. By using Hupkeep, you agree to these terms.
           </p>
+        </header>
 
+        <section className="legal-section">
           <h3>Your account</h3>
           <p>
             You are responsible for the information you provide, for keeping your account credentials secure, and for
             all activity that happens through your account. If you use Google Sign-In, you are responsible for the
             security of the Google account connected to Hupkeep.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Your content</h3>
           <p>
             You keep ownership of the information and content you submit to Hupkeep. You grant Hupkeep the limited
@@ -45,7 +51,11 @@ export function TermsPage() {
             Do not upload content that you do not have the right to use, that is unlawful, or that could harm the
             service or other users.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Acceptable use</h3>
           <p>When using Hupkeep, you agree not to:</p>
           <ul>
@@ -55,7 +65,11 @@ export function TermsPage() {
             <li>use the service for unlawful activity; or</li>
             <li>interfere with other users or the operation of the product.</li>
           </ul>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Maintenance and safety disclaimer</h3>
           <p>
             Hupkeep is an organizational and informational tool. It does not replace professional advice from
@@ -63,7 +77,11 @@ export function TermsPage() {
             experts. You are responsible for your own maintenance decisions, safety choices, and any actions taken
             based on information in the service.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Third-party services</h3>
           <p>
             Hupkeep depends on third-party services to operate, including hosting, deployment, authentication,
@@ -71,36 +89,52 @@ export function TermsPage() {
             to provide the product, support sign-in, send verification or password reset emails, and store uploaded
             content.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Service changes and availability</h3>
           <p>
             Features may change over time as Hupkeep evolves. We may suspend, limit, or discontinue parts of the
             service when necessary. We do not guarantee uninterrupted or error-free availability.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Termination or restriction</h3>
           <p>
             We may restrict or terminate access to Hupkeep if we believe these terms have been violated, if the
             service is being abused, or if doing so is necessary to protect the product, users, or infrastructure.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>General limits</h3>
           <p>
             The service is provided in a practical, good-faith manner for personal home organization. To the extent
             allowed by law, Hupkeep is not responsible for indirect, incidental, or consequential losses arising from
             use of the service.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Changes to these terms</h3>
           <p>
             We may update these Terms of Service from time to time. The updated version will be posted on this page
             with a new last-updated date.
           </p>
+        </section>
 
-        </div>
-      </Panel>
+      </article>
 
-      <footer className="landing-footer">
+      <footer className="landing-footer legal-footer">
         <span>Hupkeep</span>
         <div className="legal-links">
           <Link to="/privacy">Privacy Policy</Link>

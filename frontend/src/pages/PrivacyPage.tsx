@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Panel } from '../components/UI';
 import { BrandWordmark } from '../components/BrandWordmark';
 
 const LAST_UPDATED = 'August 28, 2026';
@@ -7,9 +6,9 @@ const LAST_UPDATED = 'August 28, 2026';
 export function PrivacyPage() {
   return (
     <main className="landing-shell legal-shell">
-      <header className="landing-topbar">
+      <header className="landing-topbar legal-topbar">
         <BrandWordmark subtitle="Home maintenance, organized" />
-        <div className="landing-actions">
+        <div className="landing-actions legal-actions">
           <Link className="btn btn-ghost" to="/login">
             Sign in
           </Link>
@@ -19,15 +18,18 @@ export function PrivacyPage() {
         </div>
       </header>
 
-      <Panel title="Privacy Policy" eyebrow="Legal" className="legal-panel">
-        <div className="legal-content">
-          <p>Last updated: {LAST_UPDATED}</p>
+      <article className="legal-page">
+        <header className="legal-hero">
+          <p className="legal-meta">Last updated {LAST_UPDATED}</p>
+          <h1 className="legal-title">Privacy Policy</h1>
           <p>
             Hupkeep is a home maintenance app that helps people organize homes, repairs, schedules, assets,
             documents, warranties, and related maintenance history. This Privacy Policy explains what information
             Hupkeep collects, how it uses that information, and when service providers may process it on our behalf.
           </p>
+        </header>
 
+        <section className="legal-section">
           <h3>Information we collect</h3>
           <p>
             We collect the information you submit to create and use an account, including your name, email address,
@@ -47,7 +49,11 @@ export function PrivacyPage() {
             Like most web applications, we also receive technical information such as device and browser data, request
             logs, IP-related network information, and session data needed to secure the service and keep you signed in.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Google Sign-In information</h3>
           <p>
             If you choose to sign in with Google, Hupkeep currently requests the <code>openid</code>, <code>email</code>,
@@ -64,14 +70,22 @@ export function PrivacyPage() {
             Google sign-in creates or links an account, Hupkeep stores the Google subject identifier in its
             authentication records so the same Google identity can be recognized on later sign-ins.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>How we use information</h3>
           <p>
             We use the information we collect to provide Hupkeep features, create and manage accounts, verify email
             addresses, send verification and password-reset emails, display your home information, protect the
             platform from abuse, and improve the product over time.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Session and authentication</h3>
           <p>
             Hupkeep uses signed access tokens and secure session cookies to keep you signed in. The session cookie is
@@ -79,7 +93,11 @@ export function PrivacyPage() {
             session value for the Google OAuth state check so the sign-in flow can be protected against cross-site
             request forgery.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Service providers</h3>
           <p>
             Hupkeep runs on third-party infrastructure and services that may process information on our behalf. These
@@ -91,7 +109,11 @@ export function PrivacyPage() {
             These providers process the information necessary to run the service, deliver emails, store files, host the
             application, and authenticate sign-in flows. We do not sell your personal information.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Data retention</h3>
           <p>
             We keep account and maintenance data for as long as it is needed to provide Hupkeep, maintain your account,
@@ -99,30 +121,42 @@ export function PrivacyPage() {
             because retention can vary based on the type of data and whether the information is still needed for the
             service.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Security</h3>
           <p>
             We use reasonable technical and organizational safeguards designed to protect your information, including
             secure session handling, authentication checks, and restricted access controls. No online service can
             guarantee absolute security, and we cannot promise that information will never be compromised.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Your choices</h3>
           <p>
             You can update account information through the product where those features are available. If you need help
             with access, deletion, or privacy concerns, contact us using the details below.
           </p>
+        </section>
 
+        <hr className="legal-divider" />
+
+        <section className="legal-section">
           <h3>Changes to this policy</h3>
           <p>
             We may update this Privacy Policy from time to time as Hupkeep changes or as our legal and operational
             needs change. The updated version will be posted on this page with a new last-updated date.
           </p>
+        </section>
 
-        </div>
-      </Panel>
+      </article>
 
-      <footer className="landing-footer">
+      <footer className="landing-footer legal-footer">
         <span>Hupkeep</span>
         <div className="legal-links">
           <Link to="/terms">Terms of Service</Link>

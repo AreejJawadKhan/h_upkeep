@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 type ButtonProps = {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'accent';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'accent' | 'danger';
   type?: 'button' | 'submit' | 'reset';
   onClick?: () => void;
   disabled?: boolean;

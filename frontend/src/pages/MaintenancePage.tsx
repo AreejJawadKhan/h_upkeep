@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { PageHeader } from '../components/PageHeader';
 import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
@@ -62,7 +63,11 @@ export function MaintenancePage() {
   const [form, setForm] = useState<MaintenanceForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assetFilter, setAssetFilter] = useState<'all' | string>('all');
+  const [recordQuery, setRecordQuery] = useState('');
+  const [recordSort, setRecordSort] = useState<'newest' | 'oldest' | 'cost_desc' | 'cost_asc'>('newest');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<MaintenanceRecord | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedHome = useMemo(
@@ -218,7 +223,9 @@ export function MaintenancePage() {
 
   async function remove(record: MaintenanceRecord) {
     if (!selectedHome) return;
-    if (!window.confirm(`Delete ${record.title}?`)) return;
+    const snapshot = records;
+    setDeletingId(record.id);
+    setRecords((current) => current.filter((item) => item.id !== record.id));
     try {
       await apiRequestWithRefresh<void>(
         `/homes/${selectedHome.id}/maintenance/${record.id}`,
@@ -226,15 +233,42 @@ export function MaintenancePage() {
         () => accessToken,
         refreshSession,
       );
-      await loadDetails(selectedHome.id, assetFilter);
       setStatus('Maintenance record deleted.');
     } catch (err) {
+      setRecords(snapshot);
       setError(err instanceof Error ? err.message : 'Could not delete maintenance record.');
+    } finally {
+      setDeletingId(null);
     }
   }
 
   const totalCost = records.reduce((sum, record) => sum + record.cost, 0);
   const upcomingCount = records.filter((record) => record.next_due_date && record.next_due_date >= new Date().toISOString().slice(0, 10)).length;
+  const visibleRecords = useMemo(() => {
+    const query = recordQuery.trim().toLowerCase();
+    const filtered = records.filter((record) => {
+      if (!query) return true;
+      return [record.title, record.item, record.category, record.service_provider ?? '', record.description ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (recordSort) {
+        case 'oldest':
+          return a.date.localeCompare(b.date);
+        case 'cost_desc':
+          return b.cost - a.cost;
+        case 'cost_asc':
+          return a.cost - b.cost;
+        case 'newest':
+        default:
+          return b.date.localeCompare(a.date);
+      }
+    });
+    return sorted;
+  }, [records, recordQuery, recordSort]);
 
   return (
     <div className="homes-page">
@@ -244,15 +278,35 @@ export function MaintenancePage() {
         description="Track what has been done and what needs attention next."
         actions={<Button onClick={openCreateForm}>+ Add maintenance</Button>}
         filters={
-          <label>
-            <span className="field-label">Filter by asset</span>
-            <select className="input" value={assetFilter} onChange={(e) => setAssetFilter(e.target.value)}>
-              <option value="all">All assets</option>
-              {assets.map((asset) => (
-                <option key={asset.id} value={asset.id}>{asset.name}</option>
-              ))}
-            </select>
-          </label>
+          <>
+            <label className="toolbar-field">
+              <span className="field-label">Search</span>
+              <input
+                className="input"
+                value={recordQuery}
+                onChange={(e) => setRecordQuery(e.target.value)}
+                placeholder="Search records"
+              />
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Sort</span>
+              <select className="input" value={recordSort} onChange={(e) => setRecordSort(e.target.value as typeof recordSort)}>
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="cost_desc">Highest cost</option>
+                <option value="cost_asc">Lowest cost</option>
+              </select>
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Asset</span>
+              <select className="input" value={assetFilter} onChange={(e) => setAssetFilter(e.target.value)}>
+                <option value="all">All assets</option>
+                {assets.map((asset) => (
+                  <option key={asset.id} value={asset.id}>{asset.name}</option>
+                ))}
+              </select>
+            </label>
+          </>
         }
       />
 
@@ -348,7 +402,7 @@ export function MaintenancePage() {
                   />
                 ) : (
                   <div className="item-list">
-                    {records.map((record) => (
+                    {visibleRecords.map((record) => (
                       <article className="item-card" key={record.id}>
                         <div>
                           <strong>{record.title}</strong>
@@ -360,7 +414,7 @@ export function MaintenancePage() {
                         </div>
                         <div className="item-actions">
                           <button type="button" onClick={() => startEdit(record)}>Edit</button>
-                          <button type="button" onClick={() => void remove(record)}>Delete</button>
+                          <button type="button" onClick={() => setDeleteTarget(record)} disabled={deletingId === record.id}>Delete</button>
                         </div>
                       </article>
                     ))}
@@ -427,6 +481,29 @@ export function MaintenancePage() {
           <Button type="submit" disabled={saving}>{editingId ? 'Save record' : 'Create record'}</Button>
         </form>
       </SlideOver>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete maintenance record?"
+        description={
+          deleteTarget ? (
+            <>
+              <p>
+                This will remove <strong>{deleteTarget.title}</strong> from Hupkeep.
+              </p>
+              <p>The action cannot be undone.</p>
+            </>
+          ) : null
+        }
+        confirmLabel="Delete record"
+        destructive
+        busy={deletingId !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          void remove(deleteTarget).finally(() => setDeleteTarget(null));
+        }}
+      />
     </div>
   );
 }

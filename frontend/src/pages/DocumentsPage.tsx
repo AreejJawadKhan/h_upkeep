@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, EmptyState, Field, Panel } from '../components/UI';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { PageHeader } from '../components/PageHeader';
 import { SlideOver } from '../components/SlideOver';
 import { useAuth } from '../context/AuthContext';
@@ -46,8 +47,12 @@ export function DocumentsPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
+  const [documentQuery, setDocumentQuery] = useState('');
+  const [documentSort, setDocumentSort] = useState<'newest' | 'oldest' | 'name'>('newest');
   const [upload, setUpload] = useState<UploadForm>(emptyUpload);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<MaintenanceDocument | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const selectedHomeId = parseHomeParam(params.get('home'));
   const selectedMaintenanceId = params.get('maintenance') ?? '';
@@ -231,8 +236,9 @@ export function DocumentsPage() {
 
   async function remove(document: MaintenanceDocument) {
     if (!selectedHome || !selectedMaintenance) return;
-    if (!window.confirm(`Delete ${document.file_name}?`)) return;
-
+    const snapshot = documents;
+    setDeletingId(document.id);
+    setDocuments((current) => current.filter((item) => item.id !== document.id));
     try {
       await apiRequestWithRefresh<void>(
         `/homes/${selectedHome.id}/maintenance/${selectedMaintenance.id}/documents/${document.id}`,
@@ -240,10 +246,12 @@ export function DocumentsPage() {
         () => accessToken,
         refreshSession,
       );
-      await loadDocuments(selectedHome.id, selectedMaintenance.id);
       setStatus('Document deleted.');
     } catch (err) {
+      setDocuments(snapshot);
       setError(err instanceof Error ? err.message : 'Could not delete document.');
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -251,6 +259,26 @@ export function DocumentsPage() {
   const selectedRecordLabel = selectedMaintenance
     ? `${selectedMaintenance.title} · ${selectedMaintenance.category}`
     : 'No maintenance selected';
+  const visibleDocuments = useMemo(() => {
+    const query = documentQuery.trim().toLowerCase();
+    const filtered = documents.filter((document) => {
+      if (!query) return true;
+      return [document.file_name, document.file_type].join(' ').toLowerCase().includes(query);
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (documentSort) {
+        case 'oldest':
+          return a.created_at.localeCompare(b.created_at);
+        case 'name':
+          return a.file_name.localeCompare(b.file_name);
+        case 'newest':
+        default:
+          return b.created_at.localeCompare(a.created_at);
+      }
+    });
+    return sorted;
+  }, [documentQuery, documentSort, documents]);
 
   return (
     <div className="homes-page">
@@ -259,6 +287,31 @@ export function DocumentsPage() {
         title="Documents"
         description="Keep receipts, manuals, photos, and warranty files with the record they belong to."
         actions={<Button onClick={openUploadDrawer}>+ Upload document</Button>}
+        filters={
+          <>
+            <label className="toolbar-field">
+              <span className="field-label">Search</span>
+              <input
+                className="input"
+                value={documentQuery}
+                onChange={(e) => setDocumentQuery(e.target.value)}
+                placeholder="Search documents"
+              />
+            </label>
+            <label className="toolbar-field">
+              <span className="field-label">Sort</span>
+              <select
+                className="input"
+                value={documentSort}
+                onChange={(e) => setDocumentSort(e.target.value as typeof documentSort)}
+              >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="name">File name</option>
+              </select>
+            </label>
+          </>
+        }
       />
 
       <div className="overview-row documents-overview">
@@ -389,7 +442,7 @@ export function DocumentsPage() {
                   />
                 ) : (
                   <div className="item-list">
-                    {documents.map((document) => (
+                    {visibleDocuments.map((document) => (
                       <article className="document-card" key={document.id}>
                         <div className="document-main">
                           <div>
@@ -401,7 +454,7 @@ export function DocumentsPage() {
                           </a>
                         </div>
                         <div className="item-actions">
-                          <button type="button" onClick={() => void remove(document)}>
+                          <button type="button" onClick={() => setDeleteTarget(document)} disabled={deletingId === document.id}>
                             Delete
                           </button>
                         </div>
@@ -452,6 +505,29 @@ export function DocumentsPage() {
           </Button>
         </form>
       </SlideOver>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete document?"
+        description={
+          deleteTarget ? (
+            <>
+              <p>
+                This will remove <strong>{deleteTarget.file_name}</strong> from the selected maintenance record.
+              </p>
+              <p>The file will no longer be linked in Hupkeep.</p>
+            </>
+          ) : null
+        }
+        confirmLabel="Delete document"
+        destructive
+        busy={deletingId !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          void remove(deleteTarget).finally(() => setDeleteTarget(null));
+        }}
+      />
     </div>
   );
 }
