@@ -64,6 +64,21 @@ a {
   text-decoration: none;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.btn:focus-visible,
+.nav-link:focus-visible,
+.home-card-body:focus-visible,
+.drawer-close:focus-visible,
+.mobile-nav-toggle:focus-visible {
+  outline: 3px solid var(--accent-3);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(194, 211, 120, 0.24);
+}
+
 button,
 input,
 textarea,
@@ -678,6 +693,7 @@ p {
   padding: 0.9rem 1rem;
   border-radius: 16px;
   font-weight: 700;
+  border-left: 4px solid currentColor;
 }
 
 .form-error {
@@ -1778,6 +1794,18 @@ p {
 
 .document-dropzone.empty {
   color: var(--muted);
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 .drawer-backdrop {

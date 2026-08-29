@@ -400,8 +400,16 @@ export function SchedulesPage() {
         </div>
       ) : null}
 
-      {error ? <div className="form-error">{error}</div> : null}
-      {status ? <div className="success-banner">{status}</div> : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
+      {status ? (
+        <div className="success-banner" role="status" aria-live="polite">
+          {status}
+        </div>
+      ) : null}
 
       {loading ? (
         <Panel title="Schedules">
@@ -482,7 +490,11 @@ export function SchedulesPage() {
                       <Button variant="ghost" onClick={() => startEdit(schedule)}>
                         Edit
                       </Button>
-                      <Button variant="ghost" onClick={() => setDeleteTarget(schedule)} disabled={deletingId === schedule.id}>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setDeleteTarget(schedule)}
+                        disabled={deletingId === schedule.id}
+                      >
                         Delete
                       </Button>
                     </div>
@@ -529,8 +541,10 @@ export function SchedulesPage() {
                 </option>
               ))}
             </select>
-            <span className="field-hint">{SCHEDULE_FREQUENCIES.find((frequency) => frequency.value === form.frequency)?.note}</span>
           </Field>
+          <div className="field-hint">
+            {SCHEDULE_FREQUENCIES.find((frequency) => frequency.value === form.frequency)?.note}
+          </div>
           <div className="two-col">
             <Field label="Next due date">
               <input

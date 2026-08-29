@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 type ButtonProps = {
@@ -26,7 +26,7 @@ export function Button({
   if (href) {
     if (external) {
       return (
-        <a className={classes} href={href}>
+        <a className={classes} href={href} rel="noreferrer noopener">
           {children}
         </a>
       );
@@ -48,17 +48,43 @@ type FieldProps = {
   label: string;
   hint?: string;
   error?: string;
-  children: ReactNode;
+  children: ReactElement;
 };
 
 export function Field({ label, hint, error, children }: FieldProps) {
+  const fieldId = useId();
+  const control = isValidElement(children) ? (children as ReactElement<any>) : null;
+  const controlId = control?.props.id ?? fieldId;
+  const hintId = hint ? `${fieldId}-hint` : undefined;
+  const errorId = error ? `${fieldId}-error` : undefined;
+
+  const enhancedControl = control
+    ? cloneElement(control, {
+        id: controlId,
+        'aria-describedby':
+          [control.props['aria-describedby'], hintId, errorId].filter(Boolean).join(' ') || undefined,
+        'aria-invalid': error ? true : control.props['aria-invalid'],
+        'aria-required': control.props.required ? true : control.props['aria-required'],
+      } as Partial<any>)
+    : children;
+
   return (
-    <label className="field">
-      <span className="field-label">{label}</span>
-      {children}
-      {hint ? <span className="field-hint">{hint}</span> : null}
-      {error ? <span className="field-error">{error}</span> : null}
-    </label>
+    <div className="field">
+      <label className="field-label" htmlFor={controlId}>
+        {label}
+      </label>
+      {enhancedControl}
+      {hint ? (
+        <span className="field-hint" id={hintId}>
+          {hint}
+        </span>
+      ) : null}
+      {error ? (
+        <span className="field-error" id={errorId} role="alert">
+          {error}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -104,7 +130,7 @@ export function EmptyState({
 
 export function LoadingState({ label = 'Loading Hupkeep' }: { label?: string }) {
   return (
-    <div className="loading-state">
+    <div className="loading-state" role="status" aria-live="polite" aria-busy="true">
       <div className="spinner" />
       <p>{label}</p>
     </div>

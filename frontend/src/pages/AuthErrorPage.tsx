@@ -27,7 +27,7 @@ export function AuthErrorPage() {
         </p>
       }
     >
-      <div className="empty-state compact">
+      <div className="empty-state compact" role="status" aria-live="polite">
         <h3>Try again from the login screen</h3>
         <p>If this keeps happening, the backend configuration for Google OAuth may need a check.</p>
         <Button href="/login">Return to login</Button>
@@ -35,4 +35,3 @@ export function AuthErrorPage() {
     </AuthShell>
   );
 }
-

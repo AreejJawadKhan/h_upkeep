@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="auth-card" style={{ maxWidth: '640px', margin: '0 auto' }}>
             <p className="eyebrow">Something went wrong</p>
             <h2>Hupkeep could not load this page.</h2>
-            <p className="muted-copy">
+            <p className="muted-copy" role="alert" aria-live="assertive">
               Please refresh the page. If the problem keeps happening, sign out and sign back in.
             </p>
             <div className="hero-actions">

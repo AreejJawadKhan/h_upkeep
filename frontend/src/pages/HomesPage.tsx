@@ -415,8 +415,16 @@ export function HomesPage() {
         ))}
       </div>
 
-      {error ? <div className="form-error">{error}</div> : null}
-      {actionMessage ? <div className="success-banner">{actionMessage}</div> : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
+      {actionMessage ? (
+        <div className="success-banner" role="status" aria-live="polite">
+          {actionMessage}
+        </div>
+      ) : null}
 
       <div className="workspace-grid management-grid">
         <aside className="workspace-sidebar">
@@ -441,6 +449,8 @@ export function HomesPage() {
                       <button
                         type="button"
                         className="home-card-body"
+                        aria-pressed={active}
+                        aria-label={`Select ${home.name}`}
                         onClick={() => setParams({ home: String(home.id) })}
                       >
                         <strong>{home.name}</strong>
@@ -448,8 +458,12 @@ export function HomesPage() {
                         <em>{home.address}</em>
                       </button>
                       <div className="home-actions">
-                        <button type="button" onClick={() => startHomeEdit(home)}>Edit</button>
-                        <button type="button" onClick={() => setDeleteTarget({ kind: 'home', item: home })}>Delete</button>
+                        <button type="button" onClick={() => startHomeEdit(home)} aria-label={`Edit ${home.name}`}>
+                          Edit
+                        </button>
+                        <button type="button" onClick={() => setDeleteTarget({ kind: 'home', item: home })} aria-label={`Delete ${home.name}`}>
+                          Delete
+                        </button>
                       </div>
                     </article>
                   );
@@ -529,8 +543,12 @@ export function HomesPage() {
                           {area.notes ? <p>{area.notes}</p> : <p className="muted-copy">No notes yet.</p>}
                         </div>
                         <div className="item-actions">
-                          <button type="button" onClick={() => startAreaEdit(area)}>Edit</button>
-                          <button type="button" onClick={() => setDeleteTarget({ kind: 'area', item: area })}>Delete</button>
+                          <button type="button" onClick={() => startAreaEdit(area)} aria-label={`Edit area ${area.name}`}>
+                            Edit
+                          </button>
+                          <button type="button" onClick={() => setDeleteTarget({ kind: 'area', item: area })} aria-label={`Delete area ${area.name}`}>
+                            Delete
+                          </button>
                         </div>
                       </article>
                     ))}
@@ -579,8 +597,12 @@ export function HomesPage() {
                           <p className="muted-copy">{asset.manufacturer || 'No manufacturer'} · {asset.model || 'No model'}</p>
                         </div>
                         <div className="item-actions">
-                          <button type="button" onClick={() => startAssetEdit(asset)}>Edit</button>
-                          <button type="button" onClick={() => setDeleteTarget({ kind: 'asset', item: asset })}>Delete</button>
+                          <button type="button" onClick={() => startAssetEdit(asset)} aria-label={`Edit asset ${asset.name}`}>
+                            Edit
+                          </button>
+                          <button type="button" onClick={() => setDeleteTarget({ kind: 'asset', item: asset })} aria-label={`Delete asset ${asset.name}`}>
+                            Delete
+                          </button>
                         </div>
                       </article>
                     ))}

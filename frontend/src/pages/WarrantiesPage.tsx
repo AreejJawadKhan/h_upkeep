@@ -370,8 +370,16 @@ export function WarrantiesPage() {
         </div>
       ) : null}
 
-      {error ? <div className="form-error">{error}</div> : null}
-      {status ? <div className="success-banner">{status}</div> : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
+      {status ? (
+        <div className="success-banner" role="status" aria-live="polite">
+          {status}
+        </div>
+      ) : null}
 
       {loading ? (
         <Panel title="Warranties">
@@ -449,7 +457,11 @@ export function WarrantiesPage() {
                       <Button variant="accent" onClick={() => startEdit(warranty)}>
                         Edit
                       </Button>
-                      <Button variant="ghost" onClick={() => setDeleteTarget(warranty)} disabled={deletingId === warranty.id}>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setDeleteTarget(warranty)}
+                        disabled={deletingId === warranty.id}
+                      >
                         Delete
                       </Button>
                     </div>
@@ -535,8 +547,8 @@ export function WarrantiesPage() {
                 </option>
               ))}
             </select>
-            <span className="field-hint">Documents are pulled from the selected home.</span>
           </Field>
+          <div className="field-hint">Documents are pulled from the selected home.</div>
           <Button type="submit" disabled={saving}>
             {editingId ? 'Save warranty' : 'Create warranty'}
           </Button>

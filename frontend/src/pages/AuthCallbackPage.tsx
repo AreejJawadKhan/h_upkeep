@@ -49,7 +49,13 @@ export function AuthCallbackPage() {
   return (
     <main className="callback-shell">
       <Panel title="Google sign-in" eyebrow="Secure session">
-        {status === 'loading' ? <LoadingState label={message} /> : <div className="form-error">{message}</div>}
+        {status === 'loading' ? (
+          <LoadingState label={message} />
+        ) : (
+          <div className="form-error" role="alert" aria-live="assertive">
+            {message}
+          </div>
+        )}
       </Panel>
     </main>
   );

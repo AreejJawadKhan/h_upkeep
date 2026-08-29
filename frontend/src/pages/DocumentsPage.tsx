@@ -371,8 +371,16 @@ export function DocumentsPage() {
         </div>
       ) : null}
 
-      {error ? <div className="form-error">{error}</div> : null}
-      {status ? <div className="success-banner">{status}</div> : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
+      {status ? (
+        <div className="success-banner" role="status" aria-live="polite">
+          {status}
+        </div>
+      ) : null}
 
       {loadingHomes || loadingRecords ? (
         <Panel title="Documents">
@@ -419,7 +427,12 @@ export function DocumentsPage() {
                     </a>
                   </div>
                   <div className="item-actions">
-                    <button type="button" onClick={() => setDeleteTarget(document)} disabled={deletingId === document.id}>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(document)}
+                      disabled={deletingId === document.id}
+                      aria-label={`Delete document ${document.file_name}`}
+                    >
                       Delete
                     </button>
                   </div>

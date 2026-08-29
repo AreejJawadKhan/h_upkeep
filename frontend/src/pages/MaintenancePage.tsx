@@ -349,8 +349,16 @@ export function MaintenancePage() {
         </div>
       ) : null}
 
-      {error ? <div className="form-error">{error}</div> : null}
-      {status ? <div className="success-banner">{status}</div> : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
+      {status ? (
+        <div className="success-banner" role="status" aria-live="polite">
+          {status}
+        </div>
+      ) : null}
 
       {loading ? (
         <Panel title="Maintenance">
@@ -390,8 +398,17 @@ export function MaintenancePage() {
                     {record.next_due_date ? <p className="muted-copy">Next due {formatDate(record.next_due_date)}</p> : null}
                   </div>
                   <div className="item-actions">
-                    <button type="button" onClick={() => startEdit(record)}>Edit</button>
-                    <button type="button" onClick={() => setDeleteTarget(record)} disabled={deletingId === record.id}>Delete</button>
+                    <button type="button" onClick={() => startEdit(record)} aria-label={`Edit maintenance record ${record.title}`}>
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(record)}
+                      disabled={deletingId === record.id}
+                      aria-label={`Delete maintenance record ${record.title}`}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </article>
               ))}

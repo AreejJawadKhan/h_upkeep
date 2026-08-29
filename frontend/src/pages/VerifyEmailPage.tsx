@@ -71,8 +71,16 @@ export function VerifyEmailPage() {
         </p>
       }
     >
-      {status ? <div className="success-banner">{status}</div> : null}
-      {error ? <div className="form-error">{error}</div> : null}
+      {status ? (
+        <div className="success-banner" role="status" aria-live="polite">
+          {status}
+        </div>
+      ) : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
 
       <form className="auth-form" onSubmit={handleVerify}>
         <Field label="Verification token" hint="The token lives in the email link.">

@@ -58,8 +58,16 @@ export function ResetPasswordPage() {
         </p>
       }
     >
-      {status ? <div className="success-banner">{status}</div> : null}
-      {error ? <div className="form-error">{error}</div> : null}
+      {status ? (
+        <div className="success-banner" role="status" aria-live="polite">
+          {status}
+        </div>
+      ) : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
 
       {hasToken ? (
         <form className="auth-form" onSubmit={handleConfirm}>

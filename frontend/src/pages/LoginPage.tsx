@@ -63,7 +63,11 @@ export function LoginPage() {
           />
         </Field>
 
-        {error ? <div className="form-error">{error}</div> : null}
+        {error ? (
+          <div className="form-error" role="alert" aria-live="assertive">
+            {error}
+          </div>
+        ) : null}
 
         <Button type="submit" disabled={busy}>
           {busy ? 'Signing in...' : 'Sign in'}

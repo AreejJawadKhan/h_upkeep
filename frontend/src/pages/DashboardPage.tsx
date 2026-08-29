@@ -120,7 +120,11 @@ export function DashboardPage() {
         }
       />
 
-      {error ? <div className="form-error">{error}</div> : null}
+      {error ? (
+        <div className="form-error" role="alert" aria-live="assertive">
+          {error}
+        </div>
+      ) : null}
 
       {loadingOverview ? (
         <Panel title="Overview">

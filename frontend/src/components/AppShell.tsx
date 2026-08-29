@@ -1,16 +1,18 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from './UI';
 import { initials } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
 import { type CurrencyCode, usePreferences } from '../context/PreferencesContext';
 import { BrandWordmark } from './BrandWordmark';
+import { useModalFocus } from '../hooks/useModalFocus';
 
 export function AppShell() {
   const { user, logout } = useAuth();
   const { currencyCode, currencyOptions, setCurrencyCode } = usePreferences();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLElement>(null);
 
   const navItems = useMemo(
     () => [
@@ -47,6 +49,8 @@ export function AppShell() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [mobileNavOpen]);
+
+  useModalFocus({ open: mobileNavOpen, onClose: () => setMobileNavOpen(false), containerRef: mobileNavRef, initialFocusSelector: '.mobile-nav-menu .nav-link' });
 
   return (
     <div className="app-shell">
@@ -119,15 +123,21 @@ export function AppShell() {
       {mobileNavOpen ? (
         <div className="drawer-backdrop mobile-nav-backdrop" role="presentation" onClick={() => setMobileNavOpen(false)}>
           <aside
+            ref={mobileNavRef}
             id="mobile-nav-drawer"
             className="drawer-panel mobile-nav-panel"
             role="dialog"
             aria-modal="true"
-            aria-label="Navigation menu"
+            aria-labelledby="mobile-nav-title"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="drawer-head mobile-nav-head">
-              <BrandWordmark compact />
+              <div className="mobile-nav-title-block">
+                <BrandWordmark compact />
+                <h2 id="mobile-nav-title" className="sr-only">
+                  Navigation menu
+                </h2>
+              </div>
               <button
                 type="button"
                 className="drawer-close"
