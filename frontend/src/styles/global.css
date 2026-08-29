@@ -1112,6 +1112,13 @@ p {
   flex-wrap: wrap;
 }
 
+.panel-description {
+  margin: -0.35rem 0 1rem;
+  max-width: 60ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .home-list,
 .item-list {
   display: flex;
@@ -1177,6 +1184,10 @@ p {
   color: var(--accent-3);
   font-weight: 800;
   padding: 0;
+}
+
+.section-empty-inline {
+  padding: 0.15rem 0 0;
 }
 
 .home-detail {
@@ -2003,6 +2014,7 @@ p {
 .asset-toolbar {
   display: flex;
   justify-content: flex-end;
+  min-width: 12rem;
 }
 
 .loading-state {

@@ -494,14 +494,6 @@ export function HomesPage() {
               <Panel
                 title={selectedHome.name}
                 eyebrow="Selected home"
-                actions={
-                  <div className="panel-actions">
-                    <Button variant="secondary" onClick={startNewArea}>
-                      + Add area
-                    </Button>
-                    <Button onClick={startNewAsset}>+ Add asset</Button>
-                  </div>
-                }
               >
                 <div className="home-detail">
                   <div>
@@ -524,18 +516,13 @@ export function HomesPage() {
               </Panel>
 
               <div className="split-panels">
-                <Panel
-                  title="Areas"
-                  eyebrow="Home zones"
-                  actions={<Button variant="ghost" onClick={startNewArea}>+ Add area</Button>}
-                >
+                <Panel title="Areas" actions={<Button onClick={startNewArea}>+ Add area</Button>}>
+                  <p className="panel-description">Rooms and zones for the selected home.</p>
                   <div className="item-list">
                     {areas.length === 0 ? (
-                      <EmptyState
-                        title="No areas yet"
-                        description="Add rooms or zones to keep the home organized."
-                        action={<Button onClick={startNewArea}>Add area</Button>}
-                      />
+                      <div className="section-empty-inline">
+                        <p className="muted-copy">Add rooms or zones to keep the home organized.</p>
+                      </div>
                     ) : areas.map((area) => (
                       <article className="item-card" key={area.id}>
                         <div>
@@ -557,10 +544,9 @@ export function HomesPage() {
 
                 <Panel
                   title="Assets"
-                  eyebrow="Maintainable things"
                   actions={
-                    <div className="panel-actions">
-                      <label className="asset-toolbar">
+                    <>
+                      <label className="toolbar-field asset-toolbar">
                         <span className="field-label">Area</span>
                         <select
                           className="input"
@@ -569,14 +555,17 @@ export function HomesPage() {
                         >
                           <option value="all">All areas</option>
                           {areas.map((area) => (
-                            <option key={area.id} value={area.id}>{area.name}</option>
+                            <option key={area.id} value={area.id}>
+                              {area.name}
+                            </option>
                           ))}
                         </select>
                       </label>
                       <Button onClick={startNewAsset}>+ Add asset</Button>
-                    </div>
+                    </>
                   }
                 >
+                  <p className="panel-description">Appliances, systems, and other tracked items for the selected home.</p>
                   <div className="item-list">
                     {detailLoading ? (
                       <div className="loading-state compact">
@@ -584,11 +573,9 @@ export function HomesPage() {
                         <p>Loading assets...</p>
                       </div>
                     ) : assets.length === 0 ? (
-                      <EmptyState
-                        title="No assets yet"
-                        description="Add appliances, systems, or tools tied to this home."
-                        action={<Button onClick={startNewAsset}>Add asset</Button>}
-                      />
+                      <div className="section-empty-inline">
+                        <p className="muted-copy">Add appliances, systems, or tools tied to this home.</p>
+                      </div>
                     ) : assets.map((asset) => (
                       <article className="item-card" key={asset.id}>
                         <div>

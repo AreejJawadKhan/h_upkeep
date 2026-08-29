@@ -18,6 +18,11 @@ type UseModalFocusOptions = {
 
 export function useModalFocus({ open, onClose, containerRef, initialFocusSelector }: UseModalFocusOptions) {
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -51,7 +56,7 @@ export function useModalFocus({ open, onClose, containerRef, initialFocusSelecto
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -85,5 +90,5 @@ export function useModalFocus({ open, onClose, containerRef, initialFocusSelecto
       document.removeEventListener('keydown', handleKeyDown);
       restoreFocusRef.current?.focus();
     };
-  }, [containerRef, initialFocusSelector, onClose, open]);
+  }, [containerRef, initialFocusSelector, open]);
 }
