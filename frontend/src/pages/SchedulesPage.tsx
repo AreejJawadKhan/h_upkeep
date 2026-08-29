@@ -76,11 +76,6 @@ export function SchedulesPage() {
     [homes, selectedHomeId],
   );
 
-  const selectedAssetLabel = useMemo(() => {
-    if (assetFilter === 'all') return 'All assets';
-    return assets.find((asset) => String(asset.id) === assetFilter)?.name ?? 'Selected asset';
-  }, [assetFilter, assets]);
-
   async function loadHomes() {
     const data = await apiRequestWithRefresh<Home[]>(
       '/homes',
@@ -312,13 +307,40 @@ export function SchedulesPage() {
     return sorted;
   }, [assets, scheduleQuery, scheduleSort, schedules]);
 
+  const homeSelector = (
+    <label className="toolbar-field">
+      <span className="field-label">Home</span>
+      <select
+        className="input"
+        value={selectedHomeId}
+        onChange={(e) => setParams({ home: e.target.value }, { replace: true })}
+        disabled={homes.length === 0}
+      >
+        <option value="">Select a home</option>
+        {homes.map((home) => (
+          <option key={home.id} value={home.id}>
+            {home.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const hasSchedules = schedules.length > 0;
+
   return (
-    <div className="homes-page">
+    <div className="workspace-page schedules-page">
       <PageHeader
-        eyebrow="Hupkeep"
         title="Schedules"
         description="See upcoming work, recurring tasks, and what has already been handled."
-        actions={<Button onClick={openCreateForm}>+ Add schedule</Button>}
+        actions={
+          <>
+            {homeSelector}
+            <Button onClick={openCreateForm} disabled={!selectedHome}>
+              + Add schedule
+            </Button>
+          </>
+        }
         filters={
           <>
             <label className="toolbar-field">
@@ -357,184 +379,120 @@ export function SchedulesPage() {
         }
       />
 
-      <div className="overview-row schedule-overview">
-        <div className="stat-card">
-          <span>Schedules</span>
-          <strong>{schedules.length}</strong>
+      {hasSchedules ? (
+        <div className="overview-row schedule-overview">
+          <div className="stat-card">
+            <span>Schedules</span>
+            <strong>{schedules.length}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Recurring</span>
+            <strong>{recurringCount}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Due soon</span>
+            <strong>{dueSoonCount}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Overdue</span>
+            <strong>{overdueCount}</strong>
+          </div>
         </div>
-        <div className="stat-card">
-          <span>Recurring</span>
-          <strong>{recurringCount}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Due soon</span>
-          <strong>{dueSoonCount}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Overdue</span>
-          <strong>{overdueCount}</strong>
-        </div>
-      </div>
+      ) : null}
 
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid management-grid">
-        <aside className="workspace-sidebar">
-          <Panel title="Homes" eyebrow="Choose a home">
-            {loading ? (
-              <div className="loading-state compact">
-                <div className="spinner" />
-                <p>Loading homes...</p>
-              </div>
-            ) : homes.length === 0 ? (
-              <EmptyState
-                title="No homes yet"
-                description="Create a home first, then add repeating work to keep it maintained."
-              />
-            ) : (
-              <div className="home-grid">
-                {homes.map((home) => {
-                  const active = String(home.id) === selectedHome?.id?.toString();
-                  return (
-                    <article key={home.id} className={`home-card ${active ? 'active' : ''}`}>
-                      <button
-                        type="button"
-                        className="home-card-body"
-                        onClick={() => setParams({ home: String(home.id) })}
-                      >
-                        <strong>{home.name}</strong>
-                        <span>
-                          {home.property_type} · {home.year_built}
-                        </span>
-                        <em>{home.address}</em>
-                      </button>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-        </aside>
-
-        <section className="workspace-main">
-          {selectedHome ? (
-            <>
-              <Panel
-                title={`${selectedHome.name} schedules`}
-                eyebrow="Selected home"
-                actions={
-                  <div className="panel-actions">
-                    <div className="meta-pill">{selectedAssetLabel}</div>
-                    <Button onClick={openCreateForm}>+ Add schedule</Button>
-                  </div>
-                }
-              >
-                <div className="home-detail">
-                  <div>
-                    <p className="detail-label">Assets available</p>
-                    <strong>{assets.length}</strong>
-                  </div>
-                  <div>
-                    <p className="detail-label">Reminders enabled</p>
-                    <strong>{reminderCount}</strong>
-                  </div>
-                  <div>
-                    <p className="detail-label">Active filter</p>
-                    <strong>{assetFilter === 'all' ? 'All assets' : assets.find((asset) => String(asset.id) === assetFilter)?.name ?? 'Selected asset'}</strong>
-                  </div>
-                </div>
-              </Panel>
-
-              <Panel
-                title="Schedules"
-                eyebrow="Calendar"
-              >
-                {detailLoading ? (
-                  <div className="loading-state compact">
-                    <div className="spinner" />
-                    <p>Loading schedules...</p>
-                  </div>
-                ) : schedules.length === 0 ? (
-                  <EmptyState
-                    title="No schedules yet"
-                    description="Add a repeating task for the selected home to keep routine work visible."
-                    action={<Button onClick={openCreateForm}>Add schedule</Button>}
-                  />
-                ) : (
-                  <div className="schedule-list">
-                    {visibleSchedules.map((schedule) => {
-                      const nextDue = normalizeScheduleDate(schedule.next_due_date);
-                      const lastCompleted = normalizeScheduleDate(schedule.last_completed);
-                      const isOverdue = schedule.next_due_date ? schedule.next_due_date < todayIso : false;
-                      const isDueSoon =
-                        schedule.next_due_date ? schedule.next_due_date >= todayIso && schedule.next_due_date <= dueSoonIso : false;
-
-                      return (
-                        <article className="schedule-card" key={schedule.id}>
-                          <div className="schedule-card-main">
-                            <div className="schedule-card-head">
-                              <div>
-                                <strong>{schedule.title}</strong>
-                                <p>{schedule.frequency.replace('_', ' ')}{schedule.asset_id ? ` · ${assets.find((asset) => asset.id === schedule.asset_id)?.name ?? 'Asset'}` : ''}</p>
-                              </div>
-                              <div className="schedule-tags">
-                                <span className={`schedule-tag ${schedule.reminder_enabled ? 'active' : 'muted'}`}>
-                                  {schedule.reminder_enabled ? 'Reminder on' : 'Reminder off'}
-                                </span>
-                                {isOverdue ? <span className="schedule-tag overdue">Overdue</span> : null}
-                                {!isOverdue && isDueSoon ? <span className="schedule-tag soon">Due soon</span> : null}
-                                {!isOverdue && !isDueSoon && schedule.next_due_date ? (
-                                  <span className="schedule-tag">On track</span>
-                                ) : null}
-                              </div>
-                            </div>
-
-                            {schedule.description ? <p className="muted-copy">{schedule.description}</p> : null}
-
-                            <div className="schedule-meta">
-                              <div>
-                                <span className="detail-label">Next due</span>
-                                <strong>{formatDate(schedule.next_due_date)}</strong>
-                              </div>
-                              <div>
-                                <span className="detail-label">Last completed</span>
-                                <strong>{lastCompleted ? formatDateTime(lastCompleted) : 'Never'}</strong>
-                              </div>
-                              <div>
-                                <span className="detail-label">Status</span>
-                                <strong>{schedule.reminder_enabled ? 'Tracking reminders' : 'Quiet mode'}</strong>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="item-actions schedule-actions">
-                            <Button variant="accent" onClick={() => void complete(schedule)}>
-                              Mark complete
-                            </Button>
-                            <Button variant="ghost" onClick={() => startEdit(schedule)}>
-                              Edit
-                            </Button>
-                            <Button variant="ghost" onClick={() => setDeleteTarget(schedule)} disabled={deletingId === schedule.id}>
-                              Delete
-                            </Button>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
-              </Panel>
-            </>
-          ) : (
+      {loading ? (
+        <Panel title="Schedules">
+          <div className="loading-state">
+            <div className="spinner" />
+            <p>Loading schedules...</p>
+          </div>
+        </Panel>
+      ) : !selectedHome ? (
+        <EmptyState
+          title="No homes yet"
+          description="Create a home first, then add repeating work to keep it maintained."
+          action={<Button href="/app/homes">Go to My Home</Button>}
+        />
+      ) : (
+        <Panel title="Schedules" className="page-section">
+          {detailLoading ? (
+            <div className="loading-state compact">
+              <div className="spinner" />
+              <p>Loading schedules...</p>
+            </div>
+          ) : !hasSchedules ? (
             <EmptyState
-              title="No home selected"
-              description="Choose a home to start managing recurring maintenance work."
-              action={<Button onClick={openCreateForm}>Add schedule</Button>}
+              title="No schedules yet"
+              description="Add a repeating task for the selected home to keep routine work visible."
             />
+          ) : (
+            <div className="schedule-list">
+              {visibleSchedules.map((schedule) => {
+                const nextDue = normalizeScheduleDate(schedule.next_due_date);
+                const lastCompleted = normalizeScheduleDate(schedule.last_completed);
+                const isOverdue = schedule.next_due_date ? schedule.next_due_date < todayIso : false;
+                const isDueSoon =
+                  schedule.next_due_date ? schedule.next_due_date >= todayIso && schedule.next_due_date <= dueSoonIso : false;
+
+                return (
+                  <article className="schedule-card" key={schedule.id}>
+                    <div className="schedule-card-main">
+                      <div className="schedule-card-head">
+                        <div>
+                          <strong>{schedule.title}</strong>
+                          <p>{schedule.frequency.replace('_', ' ')}{schedule.asset_id ? ` · ${assets.find((asset) => asset.id === schedule.asset_id)?.name ?? 'Asset'}` : ''}</p>
+                        </div>
+                        <div className="schedule-tags">
+                          <span className={`schedule-tag ${schedule.reminder_enabled ? 'active' : 'muted'}`}>
+                            {schedule.reminder_enabled ? 'Reminder on' : 'Reminder off'}
+                          </span>
+                          {isOverdue ? <span className="schedule-tag overdue">Overdue</span> : null}
+                          {!isOverdue && isDueSoon ? <span className="schedule-tag soon">Due soon</span> : null}
+                          {!isOverdue && !isDueSoon && schedule.next_due_date ? (
+                            <span className="schedule-tag">On track</span>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {schedule.description ? <p className="muted-copy">{schedule.description}</p> : null}
+
+                      <div className="schedule-meta">
+                        <div>
+                          <span className="detail-label">Next due</span>
+                          <strong>{formatDate(schedule.next_due_date)}</strong>
+                        </div>
+                        <div>
+                          <span className="detail-label">Last completed</span>
+                          <strong>{lastCompleted ? formatDateTime(lastCompleted) : 'Never'}</strong>
+                        </div>
+                        <div>
+                          <span className="detail-label">Status</span>
+                          <strong>{schedule.reminder_enabled ? 'Tracking reminders' : 'Quiet mode'}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="item-actions schedule-actions">
+                      <Button variant="accent" onClick={() => void complete(schedule)}>
+                        Mark complete
+                      </Button>
+                      <Button variant="ghost" onClick={() => startEdit(schedule)}>
+                        Edit
+                      </Button>
+                      <Button variant="ghost" onClick={() => setDeleteTarget(schedule)} disabled={deletingId === schedule.id}>
+                        Delete
+                      </Button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           )}
-        </section>
-      </div>
+        </Panel>
+      )}
 
       <SlideOver
         open={drawerOpen}

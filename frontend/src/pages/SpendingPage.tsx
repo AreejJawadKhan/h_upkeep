@@ -93,54 +93,36 @@ export function SpendingPage() {
   const hasRecords = (overview?.record_count ?? 0) > 0;
 
   return (
-    <div className="homes-page">
+    <div className="workspace-page spending-page">
       <PageHeader
-        eyebrow="Hupkeep"
         title="Spending"
         description="Review home costs, monthly trends, and the records driving the totals."
-        filters={
-          <>
-            <Button
-              variant={!selectedHome ? 'primary' : 'secondary'}
-              onClick={() => setParams({}, { replace: true })}
+        actions={
+          <label className="toolbar-field">
+            <span className="field-label">Home</span>
+            <select
+              className="input"
+              value={selectedHome?.id?.toString() ?? ''}
+              onChange={(event) => {
+                const value = event.target.value;
+                setParams(value ? { home: value } : {}, { replace: true });
+              }}
             >
-              All homes
-            </Button>
-            <label>
-              <span className="field-label">Home</span>
-              <select
-                className="input"
-                value={selectedHome?.id?.toString() ?? ''}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setParams(value ? { home: value } : {}, { replace: true });
-                }}
-              >
-                <option value="">All homes</option>
-                {homes.map((home) => (
-                  <option key={home.id} value={home.id}>
-                    {home.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </>
+              <option value="">All homes</option>
+              {homes.map((home) => (
+                <option key={home.id} value={home.id}>
+                  {home.name}
+                </option>
+              ))}
+            </select>
+          </label>
         }
       />
-
-      <div className="overview-row spending-overview">
-        {metrics.map((metric) => (
-          <div className="stat-card" key={metric.label}>
-            <span>{metric.label}</span>
-            <strong>{metric.value}</strong>
-          </div>
-        ))}
-      </div>
 
       {error ? <div className="form-error">{error}</div> : null}
 
       {loadingOverview ? (
-        <Panel title="Spending" eyebrow="Overview">
+        <Panel title="Spending">
           <div className="loading-state">
             <div className="spinner" />
             <p>Loading spending summary...</p>
@@ -148,11 +130,21 @@ export function SpendingPage() {
         </Panel>
       ) : overview ? (
         <>
+          {hasRecords ? (
+            <div className="overview-row spending-overview">
+              {metrics.map((metric) => (
+                <div className="stat-card" key={metric.label}>
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           {!hasRecords ? (
             <EmptyState
               title="No spending yet"
               description="Add maintenance records with costs to start tracking expenses."
-              action={<Button href="/app/maintenance">Add maintenance</Button>}
             />
           ) : (
             <div className="split-panels">
@@ -213,28 +205,30 @@ export function SpendingPage() {
             </div>
           )}
 
-          <Panel title="Recent spend" eyebrow="Latest entries">
-            <div className="item-list">
-              {overview.recent_records.map((record) => (
-                <article className="item-card" key={record.id}>
-                  <div>
-                    <strong>{record.title}</strong>
-                    <p>
-                      {record.category} · {formatCurrency(record.cost, currencyCode)}
-                      {record.service_provider ? ` · ${record.service_provider}` : ''}
-                    </p>
-                    <p className="muted-copy">
-                      {formatDate(record.date)} · {record.home_name}
-                      {record.asset_name ? ` · ${record.asset_name}` : ''}
-                    </p>
-                  </div>
-                  <div className="item-actions">
-                    <span className="meta-pill">{formatDateTime(record.created_at)}</span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </Panel>
+          {hasRecords ? (
+            <Panel title="Recent spend" eyebrow="Latest entries">
+              <div className="item-list">
+                {overview.recent_records.map((record) => (
+                  <article className="item-card" key={record.id}>
+                    <div>
+                      <strong>{record.title}</strong>
+                      <p>
+                        {record.category} · {formatCurrency(record.cost, currencyCode)}
+                        {record.service_provider ? ` · ${record.service_provider}` : ''}
+                      </p>
+                      <p className="muted-copy">
+                        {formatDate(record.date)} · {record.home_name}
+                        {record.asset_name ? ` · ${record.asset_name}` : ''}
+                      </p>
+                    </div>
+                    <div className="item-actions">
+                      <span className="meta-pill">{formatDateTime(record.created_at)}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </Panel>
+          ) : null}
         </>
       ) : (
         <EmptyState

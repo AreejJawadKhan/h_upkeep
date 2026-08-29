@@ -60,11 +60,6 @@ export function WarrantiesPage() {
     [homes, selectedHomeId],
   );
 
-  const selectedAssetLabel = useMemo(() => {
-    if (assetFilter === 'all') return 'All assets';
-    return assets.find((asset) => String(asset.id) === assetFilter)?.name ?? 'Selected asset';
-  }, [assetFilter, assets]);
-
   async function loadHomes() {
     const data = await apiRequestWithRefresh<Home[]>(
       '/homes',
@@ -278,13 +273,40 @@ export function WarrantiesPage() {
     return sorted;
   }, [assets, documents, warrantyQuery, warrantySort, warranties]);
 
+  const homeSelector = (
+    <label className="toolbar-field">
+      <span className="field-label">Home</span>
+      <select
+        className="input"
+        value={selectedHomeId}
+        onChange={(e) => setParams({ home: e.target.value }, { replace: true })}
+        disabled={homes.length === 0}
+      >
+        <option value="">Select a home</option>
+        {homes.map((home) => (
+          <option key={home.id} value={home.id}>
+            {home.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const hasWarranties = warranties.length > 0;
+
   return (
-    <div className="homes-page">
+    <div className="workspace-page warranties-page">
       <PageHeader
-        eyebrow="Hupkeep"
         title="Warranties"
         description="Keep coverage dates, linked assets, and supporting documents visible."
-        actions={<Button onClick={openCreateForm}>+ Add warranty</Button>}
+        actions={
+          <>
+            {homeSelector}
+            <Button onClick={openCreateForm} disabled={!selectedHome}>
+              + Add warranty
+            </Button>
+          </>
+        }
         filters={
           <>
             <label className="toolbar-field">
@@ -327,174 +349,117 @@ export function WarrantiesPage() {
         }
       />
 
-      <div className="overview-row warranties-overview">
-        <div className="stat-card">
-          <span>Warranties</span>
-          <strong>{warranties.length}</strong>
+      {hasWarranties ? (
+        <div className="overview-row warranties-overview">
+          <div className="stat-card">
+            <span>Warranties</span>
+            <strong>{warranties.length}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Active</span>
+            <strong>{activeCount}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Expiring soon</span>
+            <strong>{expiringSoonCount}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Linked docs</span>
+            <strong>{linkedDocumentsCount}</strong>
+          </div>
         </div>
-        <div className="stat-card">
-          <span>Active</span>
-          <strong>{activeCount}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Expiring soon</span>
-          <strong>{expiringSoonCount}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Linked docs</span>
-          <strong>{linkedDocumentsCount}</strong>
-        </div>
-      </div>
+      ) : null}
 
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid management-grid">
-        <aside className="workspace-sidebar">
-          <Panel title="Homes" eyebrow="Choose a home">
-            {loading ? (
-              <div className="loading-state compact">
-                <div className="spinner" />
-                <p>Loading homes...</p>
-              </div>
-            ) : homes.length === 0 ? (
-              <EmptyState
-                title="No homes yet"
-                description="Create a home first, then attach warranties to its assets."
-              />
-            ) : (
-              <div className="home-grid">
-                {homes.map((home) => {
-                  const active = String(home.id) === selectedHome?.id?.toString();
-                  return (
-                    <article key={home.id} className={`home-card ${active ? 'active' : ''}`}>
-                      <button
-                        type="button"
-                        className="home-card-body"
-                        onClick={() => setParams({ home: String(home.id) })}
-                      >
-                        <strong>{home.name}</strong>
-                        <span>
-                          {home.property_type} · {home.year_built}
-                        </span>
-                        <em>{home.address}</em>
-                      </button>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-        </aside>
-
-        <section className="workspace-main">
-          {selectedHome ? (
-            <>
-              <Panel
-                title={`${selectedHome.name} warranties`}
-                eyebrow="Selected home"
-                actions={
-                  <div className="panel-actions">
-                    <div className="meta-pill">{selectedAssetLabel}</div>
-                    <Button onClick={openCreateForm}>+ Add warranty</Button>
-                  </div>
-                }
-              >
-                <div className="home-detail">
-                  <div>
-                    <p className="detail-label">Assets available</p>
-                    <strong>{assets.length}</strong>
-                  </div>
-                  <div>
-                    <p className="detail-label">Documents available</p>
-                    <strong>{documents.length}</strong>
-                  </div>
-                </div>
-              </Panel>
-
-              <Panel title="Coverage timeline" eyebrow="Status">
-                {detailLoading ? (
-                  <div className="loading-state compact">
-                    <div className="spinner" />
-                    <p>Loading warranties...</p>
-                  </div>
-                ) : warranties.length === 0 ? (
-                  <EmptyState
-                    title="No warranties yet"
-                    description="Add a warranty to keep expiration dates, providers, and supporting documents in one place."
-                    action={<Button onClick={openCreateForm}>Add warranty</Button>}
-                  />
-                ) : (
-                  <div className="warranty-list">
-                    {visibleWarranties.map((warranty) => {
-                      const assetName = assets.find((asset) => asset.id === warranty.asset_id)?.name ?? 'Asset';
-                      const document = documents.find((item) => item.id === warranty.document_id);
-                      const isExpired = warranty.expiration_date < todayIso;
-                      const isExpiringSoon =
-                        warranty.expiration_date >= todayIso && warranty.expiration_date <= dueSoonIso;
-
-                      return (
-                        <article className="warranty-card" key={warranty.id}>
-                          <div className="warranty-card-main">
-                            <div className="warranty-card-head">
-                              <div>
-                                <strong>{warranty.provider}</strong>
-                                <p>{assetName} · Ends {formatDate(warranty.expiration_date)}</p>
-                              </div>
-                              <div className="warranty-tags">
-                                {isExpired ? <span className="warranty-tag overdue">Expired</span> : null}
-                                {!isExpired && isExpiringSoon ? <span className="warranty-tag soon">Expiring soon</span> : null}
-                                {!isExpired && !isExpiringSoon ? <span className="warranty-tag active">Covered</span> : null}
-                                {warranty.document_id ? <span className="warranty-tag muted">Document linked</span> : null}
-                              </div>
-                            </div>
-
-                            {warranty.coverage_details ? (
-                              <p className="muted-copy">{warranty.coverage_details}</p>
-                            ) : (
-                              <p className="muted-copy">No coverage notes were added.</p>
-                            )}
-
-                            <div className="warranty-meta">
-                              <div>
-                                <span className="detail-label">Started</span>
-                                <strong>{formatDate(warranty.start_date)}</strong>
-                              </div>
-                              <div>
-                                <span className="detail-label">Expires</span>
-                                <strong>{formatDate(warranty.expiration_date)}</strong>
-                              </div>
-                              <div>
-                                <span className="detail-label">Document</span>
-                                <strong>{getDocLabel(document)}</strong>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="warranty-actions item-actions">
-                            <Button variant="accent" onClick={() => startEdit(warranty)}>
-                              Edit
-                            </Button>
-                            <Button variant="ghost" onClick={() => setDeleteTarget(warranty)} disabled={deletingId === warranty.id}>
-                              Delete
-                            </Button>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
-              </Panel>
-            </>
-          ) : (
+      {loading ? (
+        <Panel title="Warranties">
+          <div className="loading-state">
+            <div className="spinner" />
+            <p>Loading warranties...</p>
+          </div>
+        </Panel>
+      ) : !selectedHome ? (
+        <EmptyState
+          title="No homes yet"
+          description="Create a home first, then attach warranties to its assets."
+          action={<Button href="/app/homes">Go to My Home</Button>}
+        />
+      ) : (
+        <Panel title="Coverage timeline" className="page-section">
+          {detailLoading ? (
+            <div className="loading-state compact">
+              <div className="spinner" />
+              <p>Loading warranties...</p>
+            </div>
+          ) : !hasWarranties ? (
             <EmptyState
-              title="No home selected"
-              description="Choose a home to manage its warranties and expiration dates."
-              action={<Button onClick={openCreateForm}>Add warranty</Button>}
+              title="No warranties yet"
+              description="Add a warranty to keep expiration dates, providers, and supporting documents in one place."
             />
+          ) : (
+            <div className="warranty-list">
+              {visibleWarranties.map((warranty) => {
+                const assetName = assets.find((asset) => asset.id === warranty.asset_id)?.name ?? 'Asset';
+                const document = documents.find((item) => item.id === warranty.document_id);
+                const isExpired = warranty.expiration_date < todayIso;
+                const isExpiringSoon =
+                  warranty.expiration_date >= todayIso && warranty.expiration_date <= dueSoonIso;
+
+                return (
+                  <article className="warranty-card" key={warranty.id}>
+                    <div className="warranty-card-main">
+                      <div className="warranty-card-head">
+                        <div>
+                          <strong>{warranty.provider}</strong>
+                          <p>{assetName} · Ends {formatDate(warranty.expiration_date)}</p>
+                        </div>
+                        <div className="warranty-tags">
+                          {isExpired ? <span className="warranty-tag overdue">Expired</span> : null}
+                          {!isExpired && isExpiringSoon ? <span className="warranty-tag soon">Expiring soon</span> : null}
+                          {!isExpired && !isExpiringSoon ? <span className="warranty-tag active">Covered</span> : null}
+                          {warranty.document_id ? <span className="warranty-tag muted">Document linked</span> : null}
+                        </div>
+                      </div>
+
+                      {warranty.coverage_details ? (
+                        <p className="muted-copy">{warranty.coverage_details}</p>
+                      ) : (
+                        <p className="muted-copy">No coverage notes were added.</p>
+                      )}
+
+                      <div className="warranty-meta">
+                        <div>
+                          <span className="detail-label">Started</span>
+                          <strong>{formatDate(warranty.start_date)}</strong>
+                        </div>
+                        <div>
+                          <span className="detail-label">Expires</span>
+                          <strong>{formatDate(warranty.expiration_date)}</strong>
+                        </div>
+                        <div>
+                          <span className="detail-label">Document</span>
+                          <strong>{getDocLabel(document)}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="warranty-actions item-actions">
+                      <Button variant="accent" onClick={() => startEdit(warranty)}>
+                        Edit
+                      </Button>
+                      <Button variant="ghost" onClick={() => setDeleteTarget(warranty)} disabled={deletingId === warranty.id}>
+                        Delete
+                      </Button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           )}
-        </section>
-      </div>
+        </Panel>
+      )}
 
       <SlideOver
         open={drawerOpen}

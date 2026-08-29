@@ -256,9 +256,6 @@ export function DocumentsPage() {
   }
 
   const documentCount = documents.length;
-  const selectedRecordLabel = selectedMaintenance
-    ? `${selectedMaintenance.title} · ${selectedMaintenance.category}`
-    : 'No maintenance selected';
   const visibleDocuments = useMemo(() => {
     const query = documentQuery.trim().toLowerCase();
     const filtered = documents.filter((document) => {
@@ -280,15 +277,62 @@ export function DocumentsPage() {
     return sorted;
   }, [documentQuery, documentSort, documents]);
 
+  const homeSelector = (
+    <label className="toolbar-field">
+      <span className="field-label">Home</span>
+      <select
+        className="input"
+        value={selectedHomeId}
+        onChange={(e) => setParams({ home: e.target.value }, { replace: true })}
+        disabled={homes.length === 0}
+      >
+        <option value="">Select a home</option>
+        {homes.map((home) => (
+          <option key={home.id} value={home.id}>
+            {home.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const maintenanceSelector = (
+    <label className="toolbar-field">
+      <span className="field-label">Maintenance</span>
+      <select
+        className="input"
+        value={selectedMaintenanceId}
+        onChange={(e) => setParams({ home: String(selectedHome?.id ?? ''), maintenance: e.target.value }, { replace: true })}
+        disabled={!selectedHome || records.length === 0}
+      >
+        <option value="">Select a record</option>
+        {records.map((record) => (
+          <option key={record.id} value={record.id}>
+            {record.title}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const hasDocuments = documents.length > 0;
+
   return (
-    <div className="homes-page">
+    <div className="workspace-page documents-page">
       <PageHeader
-        eyebrow="Hupkeep"
         title="Documents"
         description="Keep receipts, manuals, photos, and warranty files with the record they belong to."
-        actions={<Button onClick={openUploadDrawer}>+ Upload document</Button>}
+        actions={
+          <>
+            {homeSelector}
+            <Button onClick={openUploadDrawer} disabled={!selectedMaintenance}>
+              + Upload document
+            </Button>
+          </>
+        }
         filters={
           <>
+            {maintenanceSelector}
             <label className="toolbar-field">
               <span className="field-label">Search</span>
               <input
@@ -314,165 +358,77 @@ export function DocumentsPage() {
         }
       />
 
-      <div className="overview-row documents-overview">
-        <div className="stat-card">
-          <span>Documents</span>
-          <strong>{documentCount}</strong>
+      {hasDocuments ? (
+        <div className="overview-row documents-overview">
+          <div className="stat-card">
+            <span>Documents</span>
+            <strong>{documentCount}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Maintenance records</span>
+            <strong>{records.length}</strong>
+          </div>
         </div>
-        <div className="stat-card">
-          <span>Maintenance records</span>
-          <strong>{records.length}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Selected record</span>
-          <strong>{selectedMaintenance ? 'Ready' : 'None'}</strong>
-        </div>
-      </div>
+      ) : null}
 
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid management-grid">
-        <aside className="workspace-sidebar">
-          <Panel title="Homes" eyebrow="Choose a home">
-            {loadingHomes ? (
-              <div className="loading-state compact">
-                <div className="spinner" />
-                <p>Loading homes...</p>
-              </div>
-            ) : homes.length === 0 ? (
-              <EmptyState
-                title="No homes yet"
-                description="Create a home first, then attach documents to its maintenance records."
-              />
-            ) : (
-              <div className="home-list">
-                {homes.map((home) => {
-                  const active = String(home.id) === selectedHome?.id?.toString();
-                  return (
-                    <article key={home.id} className={`home-card ${active ? 'active' : ''}`}>
-                      <button
-                        type="button"
-                        className="home-card-body"
-                        onClick={() => setParams({ home: String(home.id) })}
-                      >
-                        <strong>{home.name}</strong>
-                        <span>
-                          {home.property_type} · {home.year_built}
-                        </span>
-                        <em>{home.address}</em>
-                      </button>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-
-          <Panel title="Maintenance" eyebrow="Attach to a record">
-            {loadingRecords ? (
-              <div className="loading-state compact">
-                <div className="spinner" />
-                <p>Loading maintenance...</p>
-              </div>
-            ) : !selectedHome ? (
-              <EmptyState title="No home selected" description="Choose a home to browse its maintenance records." />
-            ) : records.length === 0 ? (
-              <EmptyState
-                title="No maintenance records yet"
-                description="Create a maintenance record first so documents have a place to live."
-              />
-            ) : (
-              <div className="item-list">
-                {records.map((record) => {
-                  const active = String(record.id) === selectedMaintenance?.id?.toString();
-                  return (
-                    <article key={record.id} className={`item-card document-record ${active ? 'active' : ''}`}>
-                      <button
-                        type="button"
-                        className="home-card-body"
-                        onClick={() => setParams({ home: String(selectedHome.id), maintenance: String(record.id) })}
-                      >
-                        <strong>{record.title}</strong>
-                        <p>{record.item} · {record.category}</p>
-                        <p className="muted-copy">{formatDate(record.date)}</p>
-                      </button>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-        </aside>
-
-        <section className="workspace-main">
-          {selectedHome && selectedMaintenance ? (
-            <>
-              <Panel
-                title={`${selectedHome.name} documents`}
-                eyebrow="Selected maintenance"
-                actions={<div className="meta-pill">{selectedRecordLabel}</div>}
-              >
-                <div className="home-detail">
-                  <div>
-                    <p className="detail-label">Documents attached</p>
-                    <strong>{documents.length}</strong>
-                  </div>
-                  <div>
-                    <p className="detail-label">Last updated</p>
-                    <strong>{selectedMaintenance.updated_at ? formatDateTime(selectedMaintenance.updated_at) : '—'}</strong>
-                  </div>
-                </div>
-              </Panel>
-
-              <Panel
-                title="Attached files"
-                eyebrow="Receipts, photos, warranties"
-                actions={<Button onClick={openUploadDrawer}>+ Upload document</Button>}
-              >
-                {loadingDocuments ? (
-                  <div className="loading-state compact">
-                    <div className="spinner" />
-                    <p>Loading documents...</p>
-                  </div>
-                ) : documents.length === 0 ? (
-                  <EmptyState
-                    title="No documents yet"
-                    description="Upload a receipt, photo, invoice, or warranty file for this maintenance record."
-                  />
-                ) : (
-                  <div className="item-list">
-                    {visibleDocuments.map((document) => (
-                      <article className="document-card" key={document.id}>
-                        <div className="document-main">
-                          <div>
-                            <strong>{document.file_name}</strong>
-                            <p>{document.file_type} · {formatDateTime(document.created_at)}</p>
-                          </div>
-                          <a className="document-link" href={document.cloudinary_url} target="_blank" rel="noreferrer">
-                            Open file
-                          </a>
-                        </div>
-                        <div className="item-actions">
-                          <button type="button" onClick={() => setDeleteTarget(document)} disabled={deletingId === document.id}>
-                            Delete
-                          </button>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </Panel>
-            </>
-          ) : (
+      {loadingHomes || loadingRecords ? (
+        <Panel title="Documents">
+          <div className="loading-state compact">
+            <div className="spinner" />
+            <p>Loading documents...</p>
+          </div>
+        </Panel>
+      ) : !selectedHome ? (
+        <EmptyState
+          title="No homes yet"
+          description="Create a home first, then attach documents to its maintenance records."
+          action={<Button href="/app/homes">Go to My Home</Button>}
+        />
+      ) : records.length === 0 ? (
+        <EmptyState
+          title="No maintenance records yet"
+          description="Documents must attach to a maintenance record. Create one first, then upload files here."
+          action={<Button href="/app/maintenance">Go to Maintenance</Button>}
+        />
+      ) : (
+        <Panel title="Attached files" className="page-section">
+          {loadingDocuments ? (
+            <div className="loading-state compact">
+              <div className="spinner" />
+              <p>Loading documents...</p>
+            </div>
+          ) : !hasDocuments ? (
             <EmptyState
-              title="No maintenance selected"
-              description="Pick a home and maintenance record to attach documents."
-              action={<Button onClick={openUploadDrawer}>Upload document</Button>}
+              title="No documents yet"
+              description="Upload a receipt, photo, invoice, or warranty file for this maintenance record."
             />
+          ) : (
+            <div className="item-list">
+              {visibleDocuments.map((document) => (
+                <article className="document-card" key={document.id}>
+                  <div className="document-main">
+                    <div>
+                      <strong>{document.file_name}</strong>
+                      <p>{document.file_type} · {formatDateTime(document.created_at)}</p>
+                    </div>
+                    <a className="document-link" href={document.cloudinary_url} target="_blank" rel="noreferrer">
+                      Open file
+                    </a>
+                  </div>
+                  <div className="item-actions">
+                    <button type="button" onClick={() => setDeleteTarget(document)} disabled={deletingId === document.id}>
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
-        </section>
-      </div>
+        </Panel>
+      )}
 
       <SlideOver
         open={drawerOpen}

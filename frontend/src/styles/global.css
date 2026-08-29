@@ -918,6 +918,15 @@ p {
   padding: 0 0 1rem;
 }
 
+.workspace-page {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .homes-page {
   display: flex;
   flex-direction: column;
@@ -926,10 +935,16 @@ p {
 
 .page-header {
   display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0 0.35rem;
+}
+
+.page-header-top {
+  display: flex;
   justify-content: space-between;
   align-items: end;
   gap: 1rem;
-  padding: 0 0.35rem;
 }
 
 .page-header-copy {
@@ -948,20 +963,20 @@ p {
   max-width: 62ch;
 }
 
-.page-header-meta {
-  display: flex;
-  align-items: end;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.page-header-filters,
 .page-header-actions {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  align-items: center;
+  min-width: 0;
+  justify-content: flex-end;
+  align-items: end;
+}
+
+.page-header-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: end;
   min-width: 0;
 }
 
@@ -973,17 +988,13 @@ p {
   flex: 1 1 12rem;
 }
 
-.page-header-filters .input,
-.page-header-filters .btn {
+.page-header-toolbar .input,
+.page-header-toolbar .btn {
   min-height: 2.8rem;
 }
 
-.page-header-filters .toolbar-field {
+.page-header-toolbar .toolbar-field {
   width: 100%;
-}
-
-.page-header-actions .btn {
-  min-height: 2.8rem;
 }
 
 .overview-row {
@@ -2029,9 +2040,13 @@ p {
     flex-direction: column;
   }
 
-  .page-header {
+  .page-header-top {
     align-items: start;
     flex-direction: column;
+  }
+
+  .page-header-actions {
+    justify-content: flex-start;
   }
 
   .workspace-grid.management-grid {
@@ -2132,8 +2147,7 @@ p {
     flex-direction: column;
   }
 
-  .page-header,
-  .page-header-meta {
+  .page-header-top {
     align-items: start;
     flex-direction: column;
   }
@@ -2143,18 +2157,16 @@ p {
     padding: 0;
   }
 
-  .page-header-meta,
-  .page-header-filters,
-  .page-header-actions {
+  .page-header-actions,
+  .page-header-toolbar {
     width: 100%;
   }
 
-  .page-header-filters .toolbar-field {
+  .page-header-toolbar .toolbar-field {
     min-width: 0;
     flex: 1 1 100%;
   }
 
-  .page-header-filters .btn,
   .page-header-actions .btn {
     width: 100%;
   }

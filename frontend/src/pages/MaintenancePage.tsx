@@ -270,13 +270,35 @@ export function MaintenancePage() {
     return sorted;
   }, [records, recordQuery, recordSort]);
 
+  const homeSelector = (
+    <label className="toolbar-field">
+      <span className="field-label">Home</span>
+      <select className="input" value={selectedHomeId} onChange={(e) => setParams({ home: e.target.value }, { replace: true })} disabled={homes.length === 0}>
+        <option value="">Select a home</option>
+        {homes.map((home) => (
+          <option key={home.id} value={home.id}>
+            {home.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const hasRecords = records.length > 0;
+
   return (
-    <div className="homes-page">
+    <div className="workspace-page maintenance-page">
       <PageHeader
-        eyebrow="Hupkeep"
         title="Maintenance"
         description="Track what has been done and what needs attention next."
-        actions={<Button onClick={openCreateForm}>+ Add maintenance</Button>}
+        actions={
+          <>
+            {homeSelector}
+            <Button onClick={openCreateForm} disabled={!selectedHome}>
+              + Add maintenance
+            </Button>
+          </>
+        }
         filters={
           <>
             <label className="toolbar-field">
@@ -310,123 +332,73 @@ export function MaintenancePage() {
         }
       />
 
-      <div className="overview-row">
-        <div className="stat-card">
-          <span>Maintenance records</span>
-          <strong>{records.length}</strong>
+      {hasRecords ? (
+        <div className="overview-row maintenance-overview">
+          <div className="stat-card">
+            <span>Maintenance records</span>
+            <strong>{records.length}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Upcoming</span>
+            <strong>{upcomingCount}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Total spend</span>
+            <strong>{formatCurrency(totalCost, currencyCode)}</strong>
+          </div>
         </div>
-        <div className="stat-card">
-          <span>Upcoming</span>
-          <strong>{upcomingCount}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Total spend</span>
-          <strong>{formatCurrency(totalCost, currencyCode)}</strong>
-        </div>
-      </div>
+      ) : null}
 
       {error ? <div className="form-error">{error}</div> : null}
       {status ? <div className="success-banner">{status}</div> : null}
 
-      <div className="workspace-grid management-grid">
-        <aside className="workspace-sidebar">
-          <Panel title="Homes" eyebrow="Choose a home">
-            {loading ? (
-              <div className="loading-state compact">
-                <div className="spinner" />
-                <p>Loading homes...</p>
-              </div>
-            ) : homes.length === 0 ? (
-              <EmptyState
-                title="No homes yet"
-                description="Create a home first, then return here to track upkeep."
-              />
-            ) : (
-              <div className="home-grid">
-                {homes.map((home) => {
-                  const active = String(home.id) === selectedHome?.id?.toString();
-                  return (
-                    <article key={home.id} className={`home-card ${active ? 'active' : ''}`}>
-                      <button type="button" className="home-card-body" onClick={() => setParams({ home: String(home.id) })}>
-                        <strong>{home.name}</strong>
-                        <span>{home.property_type} · {home.year_built}</span>
-                        <em>{home.address}</em>
-                      </button>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </Panel>
-        </aside>
-
-        <section className="workspace-main">
-          {selectedHome ? (
-            <>
-              <Panel
-                title={`${selectedHome.name} maintenance`}
-                eyebrow="Selected home"
-                actions={<div className="meta-pill">{records.length} records</div>}
-              >
-                <div className="home-detail">
-                  <div>
-                    <p className="detail-label">Assets available</p>
-                    <strong>{assets.length}</strong>
-                  </div>
-                  <div>
-                    <p className="detail-label">Current filter</p>
-                    <strong>{assetFilter === 'all' ? 'All assets' : assets.find((asset) => String(asset.id) === assetFilter)?.name ?? 'Selected asset'}</strong>
-                  </div>
-                  <div>
-                    <p className="detail-label">Next step</p>
-                    <strong>{upcomingCount > 0 ? `${upcomingCount} items due soon` : 'Nothing urgent'}</strong>
-                  </div>
-                </div>
-              </Panel>
-
-              <Panel
-                title="Records"
-                eyebrow="History"
-                actions={<Button onClick={openCreateForm}>+ Add maintenance</Button>}
-              >
-                {detailLoading ? (
-                  <div className="loading-state compact">
-                    <div className="spinner" />
-                    <p>Loading maintenance...</p>
-                  </div>
-                ) : records.length === 0 ? (
-                  <EmptyState
-                    title="No maintenance records yet"
-                    description="Track repairs, upkeep, and routine work from this home."
-                    action={<Button onClick={openCreateForm}>Add maintenance</Button>}
-                  />
-                ) : (
-                  <div className="item-list">
-                    {visibleRecords.map((record) => (
-                      <article className="item-card" key={record.id}>
-                        <div>
-                          <strong>{record.title}</strong>
-                          <p>{record.item} · {record.category}</p>
-                          <p className="muted-copy">
-                            {formatDate(record.date)} · {formatCurrency(record.cost, currencyCode)}{record.service_provider ? ` · ${record.service_provider}` : ''}
-                          </p>
-                          {record.next_due_date ? <p className="muted-copy">Next due {formatDate(record.next_due_date)}</p> : null}
-                        </div>
-                        <div className="item-actions">
-                          <button type="button" onClick={() => startEdit(record)}>Edit</button>
-                          <button type="button" onClick={() => setDeleteTarget(record)} disabled={deletingId === record.id}>Delete</button>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </Panel>
-            </>
+      {loading ? (
+        <Panel title="Maintenance">
+          <div className="loading-state">
+            <div className="spinner" />
+            <p>Loading maintenance...</p>
+          </div>
+        </Panel>
+      ) : !selectedHome ? (
+        <EmptyState
+          title="No homes yet"
+          description="Create a home first, then return here to track upkeep."
+          action={<Button href="/app/homes">Go to My Home</Button>}
+        />
+      ) : (
+        <Panel title="Records" className="page-section">
+          {detailLoading ? (
+            <div className="loading-state compact">
+              <div className="spinner" />
+              <p>Loading maintenance...</p>
+            </div>
+          ) : !hasRecords ? (
+            <EmptyState
+              title="No maintenance records yet"
+              description="Track repairs, upkeep, and routine work from this home."
+            />
           ) : (
-            <EmptyState title="No home selected" description="Choose a home to start tracking maintenance records." action={<Button onClick={openCreateForm}>Add maintenance</Button>} />
+            <div className="item-list">
+              {visibleRecords.map((record) => (
+                <article className="item-card" key={record.id}>
+                  <div>
+                    <strong>{record.title}</strong>
+                    <p>{record.item} · {record.category}</p>
+                    <p className="muted-copy">
+                      {formatDate(record.date)} · {formatCurrency(record.cost, currencyCode)}{record.service_provider ? ` · ${record.service_provider}` : ''}
+                    </p>
+                    {record.next_due_date ? <p className="muted-copy">Next due {formatDate(record.next_due_date)}</p> : null}
+                  </div>
+                  <div className="item-actions">
+                    <button type="button" onClick={() => startEdit(record)}>Edit</button>
+                    <button type="button" onClick={() => setDeleteTarget(record)} disabled={deletingId === record.id}>Delete</button>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
-        </section>
-      </div>
+        </Panel>
+      )}
 
       <SlideOver
         open={drawerOpen}

@@ -379,9 +379,8 @@ export function HomesPage() {
   ];
 
   return (
-    <div className="homes-page">
+    <div className="workspace-page homes-page">
       <PageHeader
-        eyebrow="Hupkeep"
         title="My Home"
         description="Keep homes, areas, and assets organized without burying the page in forms."
         actions={<Button onClick={startNewHome}>+ Add home</Button>}
@@ -421,11 +420,7 @@ export function HomesPage() {
 
       <div className="workspace-grid management-grid">
         <aside className="workspace-sidebar">
-          <Panel
-            title="Homes"
-            eyebrow="Choose a place"
-            actions={<Button variant="ghost" onClick={startNewHome}>+ Add home</Button>}
-          >
+          <Panel title="Homes" actions={<Button variant="ghost" onClick={startNewHome}>+ Add home</Button>}>
             {loading ? (
               <div className="loading-state compact">
                 <div className="spinner" />
@@ -463,18 +458,20 @@ export function HomesPage() {
             )}
           </Panel>
 
-          <Panel title="How it works" eyebrow="Quick actions">
-            <div className="preview-list">
-              <div className="preview-item">
-                <strong>Add areas from the selected home</strong>
-                <span>Keep rooms and zones grouped under one place.</span>
+          {homes.length === 0 ? (
+            <Panel title="How it works">
+              <div className="preview-list">
+                <div className="preview-item">
+                  <strong>Add areas from the selected home</strong>
+                  <span>Keep rooms and zones grouped under one place.</span>
+                </div>
+                <div className="preview-item">
+                  <strong>Add assets when you need detail</strong>
+                  <span>Track appliances, systems, and other important items separately.</span>
+                </div>
               </div>
-              <div className="preview-item">
-                <strong>Add assets when you need detail</strong>
-                <span>Track appliances, systems, and other important items separately.</span>
-              </div>
-            </div>
-          </Panel>
+            </Panel>
+          ) : null}
         </aside>
 
         <section className="workspace-main">

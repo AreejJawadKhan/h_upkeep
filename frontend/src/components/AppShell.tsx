@@ -104,11 +104,10 @@ export function AppShell() {
               aria-label="Open navigation menu"
               aria-expanded={mobileNavOpen}
               aria-controls="mobile-nav-drawer"
-            >
-              <span aria-hidden="true">☰</span>
-              <span>Menu</span>
-            </button>
-            <div className="topbar-pill">Hupkeep</div>
+              >
+                <span aria-hidden="true">☰</span>
+                <span>Menu</span>
+              </button>
           </div>
         </header>
 

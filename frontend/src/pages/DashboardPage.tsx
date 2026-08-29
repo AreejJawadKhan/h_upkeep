@@ -34,11 +34,9 @@ export function DashboardPage() {
     (overview?.due_soon_count ?? 0) +
     (overview?.expiring_soon_count ?? 0) +
     (overview?.expired_warranty_count ?? 0);
-  const healthScore = overview
-    ? Math.max(35, 100 - attentionCount * 11 - (overview.overdue_count + overview.expired_warranty_count) * 4)
-    : 0;
+  const healthScore = overview ? Math.max(40, 100 - attentionCount * 15) : 0;
   const healthLabel =
-    attentionCount === 0 ? 'Looking good' : attentionCount <= 2 ? 'A few items need review' : 'Needs attention';
+    attentionCount === 0 ? 'On track' : attentionCount <= 2 ? 'A few items need review' : 'Needs attention';
   const topUpcoming = overview?.upcoming_maintenance.slice(0, 3) ?? [];
   const topActivity = overview?.recent_activity.slice(0, 3) ?? [];
   const homeCards = overview?.home_health ?? [];
@@ -96,13 +94,12 @@ export function DashboardPage() {
   const trendMax = Math.max(...(overview?.spending.monthly_trend.map((entry) => entry.total_spend) ?? [0]), 0);
 
   return (
-    <div className="homes-page dashboard-page">
+    <div className="workspace-page dashboard-page">
       <PageHeader
-        eyebrow="Hupkeep"
         title="Overview"
         description="Here&apos;s what needs attention across your homes."
-        filters={
-          <label className="dashboard-scope">
+        actions={
+          <label className="toolbar-field dashboard-scope">
             <span className="detail-label">Scope</span>
             <select
               className="input"
@@ -126,7 +123,7 @@ export function DashboardPage() {
       {error ? <div className="form-error">{error}</div> : null}
 
       {loadingOverview ? (
-        <Panel title="Overview" eyebrow="Hupkeep">
+        <Panel title="Overview">
           <div className="loading-state">
             <div className="spinner" />
             <p>Loading overview...</p>
