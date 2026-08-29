@@ -78,9 +78,15 @@ describe('frontend workspace', () => {
   test('landing page renders the product story and legal links', async () => {
     renderAt('/');
 
-    expect(await screen.findByRole('heading', { name: /everything for your home, organized\./i })).toBeInTheDocument();
     expect(
-      screen.getByText(/keep maintenance, appliances, warranties, documents, and expenses in one place\./i),
+      await screen.findByRole('heading', {
+        name: /one place for the work, files, and costs behind a well-run home\./i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /track maintenance, schedules, warranties, documents, and spending without turning home care into a spreadsheet\./i,
+      ),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /terms of service/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /privacy policy/i })).toBeInTheDocument();

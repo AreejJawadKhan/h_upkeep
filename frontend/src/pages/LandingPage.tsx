@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { BrandWordmark } from '../components/BrandWordmark';
 
 const previewItems = [
-  { title: 'Add your first home', body: 'Start with one address and build from there.' },
-  { title: 'Keep maintenance on track', body: 'See what needs attention without digging through notes.' },
-  { title: 'Store the important things', body: 'Receipts, manuals, warranties, and photos stay together.' },
+  { title: 'Start with one home', body: 'Add homes, rooms, and assets as your setup grows.' },
+  { title: 'Keep work visible', body: 'See maintenance and schedules at a glance.' },
+  { title: 'Keep records together', body: 'Receipts, manuals, and warranty files stay attached.' },
 ];
 
 export function LandingPage() {
@@ -28,9 +28,9 @@ export function LandingPage() {
 
       <section className="landing-grid">
         <div className="hero-copy">
-          <div className="hero-tag">Calm upkeep for real homes.</div>
-          <h2>Everything for your home, organized.</h2>
-          <p>Keep maintenance, appliances, warranties, documents, and expenses in one place.</p>
+          <div className="hero-tag">Calm upkeep for every home.</div>
+          <h2>One place for the work, files, and costs behind a well-run home.</h2>
+          <p>Track maintenance, schedules, warranties, documents, and spending without turning home care into a spreadsheet.</p>
 
           <div className="hero-actions">
             <Button href="/register">Get started</Button>
@@ -56,7 +56,7 @@ export function LandingPage() {
         </div>
 
         <div className="preview-stack">
-          <Panel title="A simple preview" eyebrow="What Hupkeep keeps">
+          <Panel title="What Hupkeep helps you do" eyebrow="Everyday upkeep">
             <div className="preview-list">
               {previewItems.map((item) => (
                 <div className="preview-item" key={item.title}>
@@ -67,7 +67,7 @@ export function LandingPage() {
             </div>
           </Panel>
 
-          <Panel title="Built for day-to-day use" eyebrow="Homeowner focused">
+          <Panel title="Built for long-term use" eyebrow="Calm by default">
             <div className="preview-list">
               <div className="preview-item">
                 <strong>Clear next steps</strong>
